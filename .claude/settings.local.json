@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npm run dev:*)",
+      "Bash(pkill:*)",
+      "Read(/Users/Toni/Documents/**)",
+      "Read(/Users/Toni/Documents/handover-app-new/**)",
+      "Bash(npm install:*)",
+      "Bash(lsof:*)",
+      "Read(/Users/Toni/Downloads/**)",
+      "Read(/Users/Toni/Downloads/**)",
+      "Read(/Users/Toni/Downloads/**)",
+      "Read(/Users/Toni/Downloads/**)",
+      "Read(/Users/Toni/Downloads/**)",
+      "Read(/Users/Toni/Downloads/**)",
+      "Read(/Users/Toni/Downloads/**)",
+      "Bash(npx create-react-app:*)",
+      "Read(/Users/Toni/Downloads/**)",
+      "Bash(npm start)",
+      "Bash(npx tsc:*)",
+      "Bash(curl:*)",
+      "Bash(npm uninstall:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
