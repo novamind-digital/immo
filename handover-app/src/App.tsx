@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Header from './components/Header';
+// import Header from './components/Header';
 import ProgressIndicatorSimple from './components/ProgressIndicatorSimple';
 import SimpleForm from './components/SimpleForm';
 import AngabenZumMietobjekt from './components/screens/AngabenZumMietobjekt';
@@ -46,7 +46,7 @@ function App() {
     switch (currentStep) {
       case 0:
         return (
-          <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="max-w-4xl mx-auto px-4 py-4">
             <SimpleForm />
           </div>
         );
@@ -68,7 +68,7 @@ function App() {
         return <Protokollversand />;
       default:
         return (
-          <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="max-w-4xl mx-auto px-4 py-4">
             <SimpleForm />
           </div>
         );
@@ -77,7 +77,6 @@ function App() {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
       <ProgressIndicatorSimple 
         steps={steps} 
         currentStep={currentStep} 
@@ -86,7 +85,7 @@ function App() {
       {renderCurrentScreen()}
       
       {/* Navigation Buttons */}
-      <div className="w-full px-4 py-6">
+      <div className="w-full px-4 py-4">
         <div className="flex gap-4">
           {currentStep > 0 && (
             <button

@@ -29,7 +29,7 @@ const Zaehlererfassung: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 py-4 space-y-6">
       <h2 className="text-lg font-medium text-blue-500 mb-4 flex items-center">
         <div className="bg-blue-500 rounded-lg p-2 mr-3">
           <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="1.5">
@@ -63,7 +63,7 @@ const Zaehlererfassung: React.FC = () => {
       
       {/* Zähler Cards */}
       {meters.map((meter, index) => (
-        <div key={meter.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div key={meter.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-medium text-gray-500">
               Angaben zum Zähler {meters.length > 1 ? `${index + 1}` : ''}
@@ -126,7 +126,7 @@ const Zaehlererfassung: React.FC = () => {
           
           <button
             type="button"
-            className="w-full px-4 py-3 mt-4 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-2"
+            className="w-full px-4 py-3 mt-4 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-0"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />

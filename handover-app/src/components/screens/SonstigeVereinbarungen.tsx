@@ -2,7 +2,7 @@ import React from 'react';
 
 const SonstigeVereinbarungen: React.FC = () => {
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 py-4 space-y-6">
       <h2 className="text-lg font-medium text-blue-500 mb-4 flex items-center">
         <div className="bg-blue-500 rounded-lg p-2 mr-3">
           <svg className="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" strokeWidth="1.5">

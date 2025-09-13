@@ -8,7 +8,7 @@ interface ProgressIndicatorProps {
 
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({ steps, currentStep }) => {
   return (
-    <div className="bg-white px-4 py-6">
+    <div className="bg-white px-4 py-4">
       <div className="flex justify-center items-center space-x-4">
         {steps.map((step, index) => (
           <React.Fragment key={step.id}>

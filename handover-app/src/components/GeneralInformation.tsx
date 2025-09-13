@@ -76,7 +76,7 @@ const GeneralInformation: React.FC<GeneralInformationProps> = ({ data, onUpdate 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div className="mb-6">
         <h2 className="text-lg font-medium text-primary-500 mb-4 flex items-center">
           <span className="text-2xl mr-2">📋</span>

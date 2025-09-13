@@ -83,7 +83,7 @@ const SimpleForm: React.FC = () => {
       </h2>
       
       {/* Card 1: Angaben zur Miete */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <h3 className="text-md font-medium text-gray-500 mb-4">Angaben zur Miete</h3>
         
         <Toggle
@@ -105,7 +105,7 @@ const SimpleForm: React.FC = () => {
       </div>
 
       {/* Card 2: Angaben zum Eigentümer */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <h3 className="text-md font-medium text-gray-500 mb-4">Angaben zum {managerType === 'verwalter' ? 'Verwalter' : 'Eigentümer'}</h3>
         
         <Toggle
@@ -237,7 +237,7 @@ const SimpleForm: React.FC = () => {
 
       {/* Mieter Sektion */}
       {tenants.map((tenant, index) => (
-        <div key={tenant.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div key={tenant.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-medium text-gray-500">
               Angaben zum Mieter {tenants.length > 1 ? `${index + 1}` : ''}
