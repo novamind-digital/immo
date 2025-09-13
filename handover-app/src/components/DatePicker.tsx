@@ -53,7 +53,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           maxLength={8}
-          className={`w-full px-3 pt-6 pb-2 pr-10 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+          className={`w-full px-3 pt-6 pb-2 pr-10 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm ${
             error
               ? 'border-red-500 bg-red-50'
               : 'border-gray-300 hover:border-gray-400 focus:border-blue-500'

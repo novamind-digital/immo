@@ -78,12 +78,12 @@ const ProgressIndicatorSimple: React.FC<ProgressIndicatorProps> = ({ steps, curr
   };
 
   return (
-    <div className="bg-white py-4 shadow-sm sticky top-0 z-10">
+    <div className="bg-white py-4 shadow-sm sticky top-0 z-50">
       {/* Überschrift */}
-      <div className="text-center mb-4">
+      <div className="text-center mb-6">
         <h1 className="text-xl font-semibold text-gray-600">Wohnungsübergabe</h1>
       </div>
-      <div className="overflow-x-auto pb-4 scrollbar-hide">
+      <div className="overflow-x-auto scrollbar-hide">
         <div className="flex items-start gap-0 min-w-max">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-start">
