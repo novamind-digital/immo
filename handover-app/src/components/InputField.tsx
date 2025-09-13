@@ -7,6 +7,7 @@ interface InputFieldProps {
   required?: boolean;
   error?: string;
   type?: string;
+  placeholder?: string;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -15,7 +16,8 @@ const InputField: React.FC<InputFieldProps> = ({
   onChange,
   required = false,
   error,
-  type = 'text'
+  type = 'text',
+  placeholder
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const hasValue = value.length > 0;
@@ -35,7 +37,7 @@ const InputField: React.FC<InputFieldProps> = ({
               ? 'border-red-500 bg-red-50'
               : 'border-gray-300 hover:border-gray-400 focus:border-blue-500'
           }`}
-          placeholder=""
+          placeholder={placeholder || ""}
         />
         <label
           className={`absolute left-3 transition-all duration-300 pointer-events-none select-none ${

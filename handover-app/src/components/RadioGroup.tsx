@@ -18,7 +18,7 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
   options,
   value,
   onChange,
-  name
+  name: _name
 }) => {
   return (
     <div className="mb-4">

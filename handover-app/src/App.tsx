@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Header from './components/Header';
 import ProgressIndicatorSimple from './components/ProgressIndicatorSimple';
 import SimpleForm from './components/SimpleForm';

@@ -22,7 +22,7 @@ const Select: React.FC<SelectProps> = ({
   onChange,
   required = false,
   error,
-  placeholder = "Bitte auswählen"
+  placeholder: _placeholder = "Bitte auswählen"
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const hasValue = value.length > 0;

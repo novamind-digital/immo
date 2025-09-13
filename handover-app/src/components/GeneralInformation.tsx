@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HandoverFormData, Owner, Tenant } from '../types';
+import type { HandoverFormData, Owner, Tenant } from '../types';
 import RadioGroup from './RadioGroup';
 import InputField from './InputField';
 import DatePicker from './DatePicker';
@@ -12,7 +12,7 @@ interface GeneralInformationProps {
 }
 
 const GeneralInformation: React.FC<GeneralInformationProps> = ({ data, onUpdate }) => {
-  const [showOwnerDetails, setShowOwnerDetails] = useState(false);
+  const [, setShowOwnerDetails] = useState(false);
 
   const handleRentalTypeChange = (value: string) => {
     onUpdate({
@@ -40,9 +40,10 @@ const GeneralInformation: React.FC<GeneralInformationProps> = ({ data, onUpdate 
 
   const handleTenantChange = (index: number, field: keyof Tenant, value: string | boolean) => {
     const updatedTenants = [...data.tenants];
+    const processedValue = field === 'isPresent' ? value === 'true' : value;
     updatedTenants[index] = {
       ...updatedTenants[index],
-      [field]: value
+      [field]: processedValue
     };
     onUpdate({
       ...data,
@@ -264,10 +265,13 @@ const GeneralInformation: React.FC<GeneralInformationProps> = ({ data, onUpdate 
 
               <Toggle
                 label="Ist der Mieter bei der Übergabe anwesend?"
-                value={tenant.isPresent}
+                value={tenant.isPresent.toString()}
                 onChange={(value) => handleTenantChange(index, 'isPresent', value)}
-                trueLabel="Anwesend"
-                falseLabel="Nicht anwesend"
+                options={[
+                  { value: 'true', label: 'Anwesend' },
+                  { value: 'false', label: 'Nicht anwesend' }
+                ]}
+                name={`tenant-present-${index}`}
               />
             </div>
           ))}

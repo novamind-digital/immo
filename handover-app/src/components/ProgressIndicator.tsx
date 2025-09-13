@@ -1,5 +1,5 @@
 import React from 'react';
-import { Step } from '../types';
+import type { Step } from '../types';
 
 interface ProgressIndicatorProps {
   steps: Step[];

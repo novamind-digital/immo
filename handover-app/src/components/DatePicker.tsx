@@ -6,6 +6,7 @@ interface DatePickerProps {
   onChange: (value: string) => void;
   required?: boolean;
   error?: string;
+  placeholder?: string;
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({
@@ -13,7 +14,8 @@ const DatePicker: React.FC<DatePickerProps> = ({
   value,
   onChange,
   required = false,
-  error
+  error,
+  placeholder: _placeholder
 }) => {
   // Format input to TT.MM.JJ
   const formatDateInput = (input: string) => {

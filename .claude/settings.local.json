@@ -22,7 +22,8 @@
       "Bash(npm start)",
       "Bash(npx tsc:*)",
       "Bash(curl:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

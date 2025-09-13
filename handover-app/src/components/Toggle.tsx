@@ -18,7 +18,7 @@ const Toggle: React.FC<ToggleProps> = ({
   options,
   value,
   onChange,
-  name
+  name: _name
 }) => {
   return (
     <div className="mb-4">
@@ -28,7 +28,7 @@ const Toggle: React.FC<ToggleProps> = ({
         </label>
       )}
       <div className="relative flex bg-gray-100 rounded-xl p-1 w-full">
-        {options.map((option, index) => (
+        {options.map((option) => (
           <button
             key={option.value}
             type="button"
