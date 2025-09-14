@@ -291,6 +291,37 @@ const SimpleForm: React.FC = () => {
                   required
                 />
               </div>
+
+              {/* Neue Adresse nur bei Mietende */}
+              {rentalType === 'end' && (
+                <>
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Neue Adresse</h4>
+                    
+                    <InputField
+                      label="Straße und Hausnummer"
+                      value={tenant.street}
+                      onChange={(value) => updateTenant(tenant.id, 'street', value)}
+                      required
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputField
+                        label="PLZ"
+                        value={tenant.postalCode}
+                        onChange={(value) => updateTenant(tenant.id, 'postalCode', value)}
+                        required
+                      />
+                      <InputField
+                        label="Ort"
+                        value={tenant.city}
+                        onChange={(value) => updateTenant(tenant.id, 'city', value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
 
@@ -376,11 +407,12 @@ const SimpleForm: React.FC = () => {
           {/* Bankdaten Felder */}
           {tenant.showBankDetails && (
             <>
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Bankdaten</h4>
                 <InputField
-                  label="Bankname"
-                  value={tenant.bankName}
-                  onChange={(value) => updateTenant(tenant.id, 'bankName', value)}
+                  label="IBAN"
+                  value={tenant.iban}
+                  onChange={(value) => updateTenant(tenant.id, 'iban', value)}
                   required
                 />
                 
@@ -392,9 +424,9 @@ const SimpleForm: React.FC = () => {
                     required
                   />
                   <InputField
-                    label="IBAN"
-                    value={tenant.iban}
-                    onChange={(value) => updateTenant(tenant.id, 'iban', value)}
+                    label="Bankname"
+                    value={tenant.bankName}
+                    onChange={(value) => updateTenant(tenant.id, 'bankName', value)}
                     required
                   />
                 </div>

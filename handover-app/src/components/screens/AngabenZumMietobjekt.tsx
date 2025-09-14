@@ -11,6 +11,13 @@ const AngabenZumMietobjekt: React.FC = () => {
   const [city, setCity] = useState('');
   const [selectedFloors, setSelectedFloors] = useState<string[]>([]);
   const [propertyType, setPropertyType] = useState('wohnung');
+  const [customPropertyType, setCustomPropertyType] = useState('');
+  const [showDesignations, setShowDesignations] = useState(false);
+  const [wohneinheit, setWohneinheit] = useState('');
+  const [stellplatz, setStellplatz] = useState('');
+  const [gewerbeeinheit, setGewerbeeinheit] = useState('');
+  const [garagenplatz, setGaragenplatz] = useState('');
+  const [tiefgaragenplatz, setTiefgaragenplatz] = useState('');
   const [hasBuiltInKitchen, setHasBuiltInKitchen] = useState('nein');
   const [kitchenCondition, setKitchenCondition] = useState('neu');
   const [cellars, setCellars] = useState<{id: number, name: string}[]>([]);
@@ -136,12 +143,23 @@ const AngabenZumMietobjekt: React.FC = () => {
             { value: 'gewerbeeinheit', label: 'Gewerbeeinheit' },
             { value: 'garage', label: 'Garage' },
             { value: 'stellplatz', label: 'Stellplatz' },
-            { value: 'wg_zimmer', label: 'WG-Zimmer' }
+            { value: 'wg_zimmer', label: 'WG-Zimmer' },
+            { value: 'custom', label: 'Eigene Angabe' }
           ]}
           value={propertyType}
           onChange={setPropertyType}
           required
         />
+
+        {/* Eingabefeld nur anzeigen wenn "Eigene Angabe" ausgewählt */}
+        {propertyType === 'custom' && (
+          <InputField
+            label="Eigene Art des Mietobjekts"
+            value={customPropertyType}
+            onChange={setCustomPropertyType}
+            required
+          />
+        )}
         
         {/* Etagen wählen */}
         <div className="mt-6">
@@ -165,6 +183,69 @@ const AngabenZumMietobjekt: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* Bezeichnungen Button */}
+        {!showDesignations && (
+          <button
+            type="button"
+            onClick={() => setShowDesignations(true)}
+            className="w-full px-4 py-3 mt-4 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-0"
+          >
+            Bezeichnungen eingeben
+          </button>
+        )}
+
+        {/* Bezeichnungen Felder */}
+        {showDesignations && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Bezeichnungen</h4>
+            
+            <InputField
+              label="Wohneinheit"
+              value={wohneinheit}
+              onChange={setWohneinheit}
+            />
+            
+            <InputField
+              label="Stellplatz"
+              value={stellplatz}
+              onChange={setStellplatz}
+            />
+            
+            <InputField
+              label="Gewerbeeinheit"
+              value={gewerbeeinheit}
+              onChange={setGewerbeeinheit}
+            />
+            
+            <InputField
+              label="Garagenplatz"
+              value={garagenplatz}
+              onChange={setGaragenplatz}
+            />
+            
+            <InputField
+              label="Tiefgaragenplatz"
+              value={tiefgaragenplatz}
+              onChange={setTiefgaragenplatz}
+            />
+            
+            <button
+              type="button"
+              onClick={() => {
+                setShowDesignations(false);
+                setWohneinheit('');
+                setStellplatz('');
+                setGewerbeeinheit('');
+                setGaragenplatz('');
+                setTiefgaragenplatz('');
+              }}
+              className="text-sm text-red-600 hover:text-red-700 mt-2"
+            >
+              Bezeichnungen entfernen
+            </button>
+          </div>
+        )}
         
         {/* Einbauküche */}
         <div className="mt-6">
@@ -230,7 +311,6 @@ const AngabenZumMietobjekt: React.FC = () => {
             label="Bezeichnung"
             value={cellar.name}
             onChange={(value) => updateCellarName(cellar.id, value)}
-            placeholder="z.B. Kellerabteil A-12"
             required
           />
           
@@ -267,7 +347,6 @@ const AngabenZumMietobjekt: React.FC = () => {
             label="Bezeichnung"
             value={inventory.name}
             onChange={(value) => updateInventoryName(inventory.id, value)}
-            placeholder="z.B. Küche, Badezimmer"
             required
           />
           

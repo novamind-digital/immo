@@ -4,14 +4,16 @@ import InputField from '../InputField';
 import DatePicker from '../DatePicker';
 
 const Zaehlererfassung: React.FC = () => {
-  const [meters, setMeters] = useState<{id: number, readingDate: string, meterType: string, meterLocation: string, meterNumber: string, meterReading: string}[]>([]);
+  const [meters, setMeters] = useState<{id: number, readingDate: string, meterType: string, customMeterType: string, meterLocation: string, customMeterLocation: string, meterNumber: string, meterReading: string}[]>([]);
 
   const addMeter = () => {
     const newMeter = {
       id: Date.now(),
       readingDate: '',
       meterType: 'stromzaehler',
+      customMeterType: '',
       meterLocation: 'wohnung',
+      customMeterLocation: '',
       meterNumber: '',
       meterReading: ''
     };
@@ -47,7 +49,7 @@ const Zaehlererfassung: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Ersten Zähler hinzufügen</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Zähler hinzufügen</h3>
             <p className="text-gray-600">Erfassen Sie alle relevanten Zähler für eine korrekte Abrechnung</p>
           </div>
           
@@ -87,42 +89,68 @@ const Zaehlererfassung: React.FC = () => {
           <Select
             label="Zählerart"
             options={[
-              { value: 'stromzaehler', label: 'Stromzähler' },
               { value: 'heizkostenverteiler', label: 'Heizkostenverteiler' },
-              { value: 'gaszaehler', label: 'Gaszähler' }
+              { value: 'stromzaehler', label: 'Stromzähler' },
+              { value: 'ht_stromzaehler', label: 'HT Stromzähler' },
+              { value: 'nt_stromzaehler', label: 'NT Stromzähler' },
+              { value: 'waermemengenzaehler', label: 'Wärmemengenzähler' },
+              { value: 'gaszaehler', label: 'Gaszähler' },
+              { value: 'ww_wasserzaehler', label: 'WW Wasserzähler' },
+              { value: 'kw_wasserzaehler', label: 'KW Wasserzähler' },
+              { value: 'custom', label: 'Eigene Bezeichnung' }
             ]}
             value={meter.meterType}
             onChange={(value) => updateMeter(meter.id, 'meterType', value)}
             required
           />
+
+          {/* Eingabefeld nur anzeigen wenn "Eigene Bezeichnung" ausgewählt */}
+          {meter.meterType === 'custom' && (
+            <InputField
+              label="Eigene Zählerart"
+              value={meter.customMeterType}
+              onChange={(value) => updateMeter(meter.id, 'customMeterType', value)}
+              required
+            />
+          )}
           
           <Select
             label="Lage des Zählers"
             options={[
               { value: 'wohnung', label: 'Wohnung' },
               { value: 'treppenhaus', label: 'Treppenhaus' },
-              { value: 'keller', label: 'Keller' }
+              { value: 'keller', label: 'Keller' },
+              { value: 'custom', label: 'Eigene eingeben' }
             ]}
             value={meter.meterLocation}
             onChange={(value) => updateMeter(meter.id, 'meterLocation', value)}
             required
           />
+
+          {/* Eingabefeld nur anzeigen wenn "Eigene eingeben" ausgewählt */}
+          {meter.meterLocation === 'custom' && (
+            <InputField
+              label="Eigene Lage"
+              value={meter.customMeterLocation}
+              onChange={(value) => updateMeter(meter.id, 'customMeterLocation', value)}
+              required
+            />
+          )}
           
-          <InputField
-            label="Zählernummer"
-            value={meter.meterNumber}
-            onChange={(value) => updateMeter(meter.id, 'meterNumber', value)}
-            placeholder="z.B. 12345678"
-            required
-          />
-          
-          <InputField
-            label="Zählerstand"
-            value={meter.meterReading}
-            onChange={(value) => updateMeter(meter.id, 'meterReading', value)}
-            placeholder="z.B. 15432"
-            required
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <InputField
+              label="Zählernummer"
+              value={meter.meterNumber}
+              onChange={(value) => updateMeter(meter.id, 'meterNumber', value)}
+              required
+            />
+            <InputField
+              label="Zählerstand"
+              value={meter.meterReading}
+              onChange={(value) => updateMeter(meter.id, 'meterReading', value)}
+              required
+            />
+          </div>
           
           <button
             type="button"

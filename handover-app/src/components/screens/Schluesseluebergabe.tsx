@@ -3,12 +3,13 @@ import Select from '../Select';
 import InputField from '../InputField';
 
 const Schluesseluebergabe: React.FC = () => {
-  const [keys, setKeys] = useState<{id: number, type: string, quantity: string}[]>([]);
+  const [keys, setKeys] = useState<{id: number, type: string, customType: string, quantity: string}[]>([]);
 
   const addKey = () => {
     const newKey = {
       id: Date.now(),
       type: 'haustuerschluessel',
+      customType: '',
       quantity: '1'
     };
     setKeys([...keys, newKey]);
@@ -43,7 +44,7 @@ const Schluesseluebergabe: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Ersten Schlüssel hinzufügen</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Schlüssel hinzufügen</h3>
             <p className="text-gray-600">Erfassen Sie alle übergebenen Schlüssel für eine vollständige Dokumentation</p>
           </div>
           
@@ -76,36 +77,51 @@ const Schluesseluebergabe: React.FC = () => {
           <Select
             label="Art"
             options={[
-              { value: 'haustuerschluessel', label: 'Haustür' },
-              { value: 'wohnungsschluessel', label: 'Wohnung' },
-              { value: 'kellerschluessel', label: 'Keller' },
-              { value: 'briefkastenschluessel', label: 'Briefkasten' },
-              { value: 'garagenschluessel', label: 'Garage' }
+              { value: 'haustuerschluessel', label: 'Haustürschlüssel' },
+              { value: 'wohnungsschluessel', label: 'Wohnungsschlüssel' },
+              { value: 'haustur_wohnungsschluessel', label: 'Haustür-/Wohnungsschlüssel' },
+              { value: 'kellerschluessel', label: 'Kellerschlüssel' },
+              { value: 'briefkastenschluessel', label: 'Briefkastenschlüssel' },
+              { value: 'garagenschluessel', label: 'Garagenschlüssel' },
+              { value: 'custom', label: 'Eigene Bezeichnung' }
             ]}
             value={key.type}
             onChange={(value) => updateKey(key.id, 'type', value)}
             required
           />
+
+          {/* Eingabefeld nur anzeigen wenn "Eigene Bezeichnung" ausgewählt */}
+          {key.type === 'custom' && (
+            <InputField
+              label="Eigene Schlüsselart"
+              value={key.customType}
+              onChange={(value) => updateKey(key.id, 'customType', value)}
+              required
+            />
+          )}
           
-          <InputField
-            label="Anzahl"
-            value={key.quantity}
-            onChange={(value) => updateKey(key.id, 'quantity', value)}
-            placeholder="z.B. 2"
-            type="number"
-            required
-          />
-          
-          <button
-            type="button"
-            className="w-full px-4 py-3 mt-4 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center gap-0"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-            </svg>
-            Foto machen
-          </button>
+          {/* Anzahl Schieberegler */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Anzahl: {key.quantity}
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="10"
+              value={key.quantity}
+              onChange={(e) => updateKey(key.id, 'quantity', e.target.value)}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              style={{
+                background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(parseInt(key.quantity) / 10) * 100}%, #E5E7EB ${(parseInt(key.quantity) / 10) * 100}%, #E5E7EB 100%)`
+              }}
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>0</span>
+              <span>5</span>
+              <span>10</span>
+            </div>
+          </div>
         </div>
       ))}
       

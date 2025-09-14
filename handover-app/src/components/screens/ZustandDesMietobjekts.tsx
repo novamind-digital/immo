@@ -6,7 +6,7 @@ import InputField from '../InputField';
 const ZustandDesMietobjekts: React.FC = () => {
   const [overallCondition, setOverallCondition] = useState('erstbezug');
   const [cleanlinessConditions, setCleanlinessConditions] = useState<string[]>([]);
-  const [defects, setDefects] = useState<{id: number, room: string, notes: string}[]>([]);
+  const [defects, setDefects] = useState<{id: number, room: string, customRoom: string, notes: string}[]>([]);
 
   const toggleCleanlinessCondition = (condition: string) => {
     setCleanlinessConditions(prev => 
@@ -20,6 +20,7 @@ const ZustandDesMietobjekts: React.FC = () => {
     const newDefect = {
       id: Date.now(),
       room: 'kueche',
+      customRoom: '',
       notes: ''
     };
     setDefects([...defects, newDefect]);
@@ -32,6 +33,12 @@ const ZustandDesMietobjekts: React.FC = () => {
   const updateDefectRoom = (id: number, room: string) => {
     setDefects(defects.map(defect => 
       defect.id === id ? { ...defect, room } : defect
+    ));
+  };
+
+  const updateDefectCustomRoom = (id: number, customRoom: string) => {
+    setDefects(defects.map(defect => 
+      defect.id === id ? { ...defect, customRoom } : defect
     ));
   };
 
@@ -119,18 +126,28 @@ const ZustandDesMietobjekts: React.FC = () => {
               { value: 'bad', label: 'Bad' },
               { value: 'wohnzimmer', label: 'Wohnzimmer' },
               { value: 'schlafzimmer', label: 'Schlafzimmer' },
-              { value: 'wc', label: 'WC' }
+              { value: 'wc', label: 'WC' },
+              { value: 'custom', label: 'Eigene Angabe' }
             ]}
             value={defect.room}
             onChange={(value) => updateDefectRoom(defect.id, value)}
             required
           />
+
+          {/* Eingabefeld nur anzeigen wenn "Eigene Angabe" ausgewählt */}
+          {defect.room === 'custom' && (
+            <InputField
+              label="Eigener Raum"
+              value={defect.customRoom}
+              onChange={(value) => updateDefectCustomRoom(defect.id, value)}
+              required
+            />
+          )}
           
           <InputField
             label="Bemerkung"
             value={defect.notes}
             onChange={(value) => updateDefectNotes(defect.id, value)}
-            placeholder="Beschreibung des Mangels"
           />
           
           <button
