@@ -4,20 +4,70 @@ import InputField from '../InputField';
 import RadioGroup from '../RadioGroup';
 import Toggle from '../Toggle';
 
+interface PropertyData {
+  selectedAddress: string;
+  customAddress?: { street: string; postalCode: string; city: string };
+  propertyType: string;
+  customPropertyType?: string;
+  selectedFloors: string[];
+  designations?: { wohneinheit?: string; stellplatz?: string; gewerbeeinheit?: string };
+}
+
 const AngabenZumMietobjekt: React.FC = () => {
-  const [selectedAddress, setSelectedAddress] = useState('');
-  const [street, setStreet] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [city, setCity] = useState('');
-  const [selectedFloors, setSelectedFloors] = useState<string[]>([]);
-  const [propertyType, setPropertyType] = useState('wohnung');
-  const [customPropertyType, setCustomPropertyType] = useState('');
-  const [showDesignations, setShowDesignations] = useState(false);
-  const [wohneinheit, setWohneinheit] = useState('');
-  const [stellplatz, setStellplatz] = useState('');
-  const [gewerbeeinheit, setGewerbeeinheit] = useState('');
-  const [garagenplatz, setGaragenplatz] = useState('');
-  const [tiefgaragenplatz, setTiefgaragenplatz] = useState('');
+  const [property, setProperty] = useState<PropertyData>({
+    selectedAddress: '',
+    propertyType: '',
+    selectedFloors: []
+  });
+
+  const [errors, setErrors] = useState<string[]>([]);
+  const [showErrors, setShowErrors] = useState(false);
+
+  const validateForm = (): boolean => {
+    const newErrors: string[] = [];
+
+    // Validate address selection
+    if (!property.selectedAddress) {
+      newErrors.push('Bitte wählen Sie eine Anschrift aus');
+    }
+
+    // Validate custom address if selected
+    if (property.selectedAddress === 'custom') {
+      if (!property.customAddress?.street) {
+        newErrors.push('Straße ist erforderlich');
+      }
+      if (!property.customAddress?.postalCode) {
+        newErrors.push('PLZ ist erforderlich');
+      }
+      if (!property.customAddress?.city) {
+        newErrors.push('Ort ist erforderlich');
+      }
+    }
+
+    // Validate property type
+    if (!property.propertyType) {
+      newErrors.push('Bitte wählen Sie die Art des Mietobjekts aus');
+    }
+
+    // Validate custom property type if selected
+    if (property.propertyType === 'custom' && !property.customPropertyType) {
+      newErrors.push('Bitte geben Sie die Art des Mietobjekts an');
+    }
+
+    // Validate floors selection
+    if (property.selectedFloors.length === 0) {
+      newErrors.push('Bitte wählen Sie mindestens eine Etage aus');
+    }
+
+    setErrors(newErrors);
+    const isValid = newErrors.length === 0;
+    
+    return isValid;
+  };
+  
+  const [showDesignations, setShowDesignations] = useState(
+    !!(property.designations?.wohneinheit || property.designations?.stellplatz || property.designations?.gewerbeeinheit)
+  );
   const [hasBuiltInKitchen, setHasBuiltInKitchen] = useState('nein');
   const [kitchenCondition, setKitchenCondition] = useState('neu');
   const [cellars, setCellars] = useState<{id: number, name: string}[]>([]);
@@ -29,12 +79,46 @@ const AngabenZumMietobjekt: React.FC = () => {
     '5. OG', '6. OG', '7. OG', 'DG'
   ];
 
+  // Helper functions for updating property data
+  const updateSelectedAddress = (selectedAddress: string) => {
+    setProperty(prev => ({ ...prev, selectedAddress }));
+  };
+
+  const updateCustomAddress = (field: string, value: string) => {
+    setProperty(prev => ({
+      ...prev,
+      customAddress: {
+        ...prev.customAddress,
+        [field]: value
+      }
+    }));
+  };
+
+  const updatePropertyType = (propertyType: string) => {
+    setProperty(prev => ({ ...prev, propertyType }));
+  };
+
+  const updateCustomPropertyType = (customPropertyType: string) => {
+    setProperty(prev => ({ ...prev, customPropertyType }));
+  };
+
   const toggleFloor = (floor: string) => {
-    setSelectedFloors(prev => 
-      prev.includes(floor) 
-        ? prev.filter(f => f !== floor)
-        : [...prev, floor]
-    );
+    setProperty(prev => {
+      const newFloors = prev.selectedFloors.includes(floor) 
+        ? prev.selectedFloors.filter(f => f !== floor)
+        : [...prev.selectedFloors, floor];
+      return { ...prev, selectedFloors: newFloors };
+    });
+  };
+
+  const updateDesignation = (field: string, value: string) => {
+    setProperty(prev => ({
+      ...prev,
+      designations: {
+        ...prev.designations,
+        [field]: value
+      }
+    }));
   };
 
   const addCellar = () => {
@@ -103,32 +187,32 @@ const AngabenZumMietobjekt: React.FC = () => {
             { value: 'address3', label: 'Testgasse 789, 80331 München' },
             { value: 'custom', label: 'Eigene Eingabe' }
           ]}
-          value={selectedAddress}
-          onChange={setSelectedAddress}
+          value={property.selectedAddress}
+          onChange={updateSelectedAddress}
           required
         />
         
         {/* Felder nur anzeigen wenn "Eigene Eingabe" ausgewählt */}
-        {selectedAddress === 'custom' && (
+        {property.selectedAddress === 'custom' && (
           <>
             <InputField
               label="Straße und Hausnummer"
-              value={street}
-              onChange={setStreet}
+              value={property.customAddress?.street || ''}
+              onChange={(value) => updateCustomAddress('street', value)}
               required
             />
             
             <div className="grid grid-cols-2 gap-4">
               <InputField
                 label="PLZ"
-                value={postalCode}
-                onChange={setPostalCode}
+                value={property.customAddress?.postalCode || ''}
+                onChange={(value) => updateCustomAddress('postalCode', value)}
                 required
               />
               <InputField
                 label="Ort"
-                value={city}
-                onChange={setCity}
+                value={property.customAddress?.city || ''}
+                onChange={(value) => updateCustomAddress('city', value)}
                 required
               />
             </div>
@@ -146,17 +230,17 @@ const AngabenZumMietobjekt: React.FC = () => {
             { value: 'wg_zimmer', label: 'WG-Zimmer' },
             { value: 'custom', label: 'Eigene Angabe' }
           ]}
-          value={propertyType}
-          onChange={setPropertyType}
+          value={property.propertyType}
+          onChange={updatePropertyType}
           required
         />
 
         {/* Eingabefeld nur anzeigen wenn "Eigene Angabe" ausgewählt */}
-        {propertyType === 'custom' && (
+        {property.propertyType === 'custom' && (
           <InputField
             label="Eigene Art des Mietobjekts"
-            value={customPropertyType}
-            onChange={setCustomPropertyType}
+            value={property.customPropertyType || ''}
+            onChange={updateCustomPropertyType}
             required
           />
         )}
@@ -164,7 +248,7 @@ const AngabenZumMietobjekt: React.FC = () => {
         {/* Etagen wählen */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            Etage(n) wählen
+            Etage(n) wählen<span className="ml-0.5 text-gray-700">*</span>
           </label>
           <div className="grid grid-cols-4 gap-3">
             {floors.map((floor) => (
@@ -173,7 +257,7 @@ const AngabenZumMietobjekt: React.FC = () => {
                 type="button"
                 onClick={() => toggleFloor(floor)}
                 className={`px-4 py-3 rounded-xl text-sm font-medium border transition-colors ${
-                  selectedFloors.includes(floor)
+                  property.selectedFloors.includes(floor)
                     ? 'bg-blue-500 text-white border-blue-500'
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                 }`}
@@ -202,43 +286,27 @@ const AngabenZumMietobjekt: React.FC = () => {
             
             <InputField
               label="Wohneinheit"
-              value={wohneinheit}
-              onChange={setWohneinheit}
+              value={property.designations?.wohneinheit || ''}
+              onChange={(value) => updateDesignation('wohneinheit', value)}
             />
             
             <InputField
               label="Stellplatz"
-              value={stellplatz}
-              onChange={setStellplatz}
+              value={property.designations?.stellplatz || ''}
+              onChange={(value) => updateDesignation('stellplatz', value)}
             />
             
             <InputField
               label="Gewerbeeinheit"
-              value={gewerbeeinheit}
-              onChange={setGewerbeeinheit}
-            />
-            
-            <InputField
-              label="Garagenplatz"
-              value={garagenplatz}
-              onChange={setGaragenplatz}
-            />
-            
-            <InputField
-              label="Tiefgaragenplatz"
-              value={tiefgaragenplatz}
-              onChange={setTiefgaragenplatz}
+              value={property.designations?.gewerbeeinheit || ''}
+              onChange={(value) => updateDesignation('gewerbeeinheit', value)}
             />
             
             <button
               type="button"
               onClick={() => {
                 setShowDesignations(false);
-                setWohneinheit('');
-                setStellplatz('');
-                setGewerbeeinheit('');
-                setGaragenplatz('');
-                setTiefgaragenplatz('');
+                setProperty(prev => ({ ...prev, designations: undefined }));
               }}
               className="text-sm text-red-600 hover:text-red-700 mt-2"
             >
@@ -393,6 +461,28 @@ const AngabenZumMietobjekt: React.FC = () => {
           Inventar hinzufügen
         </button>
       </div>
+
+      {/* Error display */}
+      {showErrors && errors.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-medium text-red-800 mb-2">
+                Bitte korrigieren Sie folgende Fehler:
+              </h3>
+              <ul className="text-sm text-red-700 space-y-1">
+                {errors.map((error, index) => (
+                  <li key={index}>• {error}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -8,6 +8,8 @@ interface InputFieldProps {
   error?: string;
   type?: string;
   placeholder?: string;
+  multiline?: boolean;
+  rows?: number;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -17,7 +19,9 @@ const InputField: React.FC<InputFieldProps> = ({
   required = false,
   error,
   type = 'text',
-  placeholder
+  placeholder,
+  multiline = false,
+  rows = 3
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const hasValue = value.length > 0;
@@ -26,19 +30,35 @@ const InputField: React.FC<InputFieldProps> = ({
   return (
     <div className="mb-4">
       <div className="relative">
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          className={`w-full px-3 pt-6 pb-2 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm ${
-            error
-              ? 'border-red-500 bg-red-50'
-              : 'border-gray-300 hover:border-gray-400 focus:border-blue-500'
-          }`}
-          placeholder={placeholder || ""}
-        />
+        {multiline ? (
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            rows={rows}
+            className={`w-full px-3 pt-6 pb-2 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm resize-vertical ${
+              error
+                ? 'border-red-500 bg-red-50'
+                : 'border-gray-300 hover:border-gray-400 focus:border-blue-500'
+            }`}
+            placeholder={placeholder || ""}
+          />
+        ) : (
+          <input
+            type={type}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            className={`w-full px-3 pt-6 pb-2 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm ${
+              error
+                ? 'border-red-500 bg-red-50'
+                : 'border-gray-300 hover:border-gray-400 focus:border-blue-500'
+            }`}
+            placeholder={placeholder || ""}
+          />
+        )}
         <label
           className={`absolute left-3 transition-all duration-300 pointer-events-none select-none ${
             shouldFloat

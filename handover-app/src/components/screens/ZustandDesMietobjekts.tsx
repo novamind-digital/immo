@@ -3,49 +3,67 @@ import RadioGroup from '../RadioGroup';
 import Select from '../Select';
 import InputField from '../InputField';
 
-const ZustandDesMietobjekts: React.FC = () => {
-  const [overallCondition, setOverallCondition] = useState('erstbezug');
-  const [cleanlinessConditions, setCleanlinessConditions] = useState<string[]>([]);
-  const [defects, setDefects] = useState<{id: number, room: string, customRoom: string, notes: string}[]>([]);
+// Local interface definitions
+interface Defect {
+  id: number;
+  room: string;
+  customRoom: string;
+  notes: string;
+}
 
-  const toggleCleanlinessCondition = (condition: string) => {
-    setCleanlinessConditions(prev => 
-      prev.includes(condition) 
-        ? prev.filter(c => c !== condition)
-        : [...prev, condition]
-    );
+interface Condition {
+  overallCondition: string;
+  cleanlinessConditions: string[];
+  defects: Defect[];
+}
+
+
+const ZustandDesMietobjekts: React.FC = () => {
+  const [condition, setCondition] = useState<Condition>({
+    overallCondition: '',
+    cleanlinessConditions: [],
+    defects: []
+  });
+
+
+
+
+  const updateOverallCondition = (overallCondition: string) => {
+    setCondition(prev => ({ ...prev, overallCondition }));
+  };
+
+  const toggleCleanlinessCondition = (conditionValue: string) => {
+    const currentConditions = condition.cleanlinessConditions;
+    const newConditions = currentConditions.includes(conditionValue)
+      ? currentConditions.filter(c => c !== conditionValue)
+      : [...currentConditions, conditionValue];
+    setCondition(prev => ({ ...prev, cleanlinessConditions: newConditions }));
   };
 
   const addDefect = () => {
-    const newDefect = {
+    const newDefect: Defect = {
       id: Date.now(),
       room: 'kueche',
       customRoom: '',
       notes: ''
     };
-    setDefects([...defects, newDefect]);
+    setCondition(prev => ({ ...prev, defects: [...prev.defects, newDefect] }));
   };
 
   const removeDefect = (id: number) => {
-    setDefects(defects.filter(defect => defect.id !== id));
+    setCondition(prev => ({
+      ...prev,
+      defects: prev.defects.filter(defect => defect.id !== id)
+    }));
   };
 
-  const updateDefectRoom = (id: number, room: string) => {
-    setDefects(defects.map(defect => 
-      defect.id === id ? { ...defect, room } : defect
-    ));
-  };
-
-  const updateDefectCustomRoom = (id: number, customRoom: string) => {
-    setDefects(defects.map(defect => 
-      defect.id === id ? { ...defect, customRoom } : defect
-    ));
-  };
-
-  const updateDefectNotes = (id: number, notes: string) => {
-    setDefects(defects.map(defect => 
-      defect.id === id ? { ...defect, notes } : defect
-    ));
+  const updateDefect = (id: number, field: keyof Defect, value: string) => {
+    setCondition(prev => ({
+      ...prev,
+      defects: prev.defects.map(defect => 
+        defect.id === id ? { ...defect, [field]: value } : defect
+      )
+    }));
   };
 
   return (
@@ -72,14 +90,15 @@ const ZustandDesMietobjekts: React.FC = () => {
             { value: 'guter_zustand', label: 'Guter Zustand' },
             { value: 'einfacher_zustand', label: 'Einfacher Zustand' }
           ]}
-          value={overallCondition}
-          onChange={setOverallCondition}
+          value={condition.overallCondition}
+          onChange={updateOverallCondition}
+          required
         />
         
         {/* Sauberkeitszustand */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            Sauberkeitszustand
+            Sauberkeitszustand<span className="ml-0.5 text-gray-700">*</span>
           </label>
           <div className="space-y-2">
             {[
@@ -88,15 +107,15 @@ const ZustandDesMietobjekts: React.FC = () => {
               { value: 'nicht_gereinigt', label: 'Nicht gereinigt' },
               { value: 'stark_verschmutzt', label: 'Stark verschmutzt' },
               { value: 'gegenstaende_muell', label: 'Gegenstände/Müll vorhanden' }
-            ].map((condition) => (
-              <label key={condition.value} className="flex items-center">
+            ].map((cleanlinessOption) => (
+              <label key={cleanlinessOption.value} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={cleanlinessConditions.includes(condition.value)}
-                  onChange={() => toggleCleanlinessCondition(condition.value)}
+                  checked={condition.cleanlinessConditions.includes(cleanlinessOption.value)}
+                  onChange={() => toggleCleanlinessCondition(cleanlinessOption.value)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="ml-3 text-sm text-gray-700">{condition.label}</span>
+                <span className="ml-3 text-sm text-gray-700">{cleanlinessOption.label}</span>
               </label>
             ))}
           </div>
@@ -104,11 +123,11 @@ const ZustandDesMietobjekts: React.FC = () => {
       </div>
       
       {/* Mängel Cards */}
-      {defects.map((defect, index) => (
+      {condition.defects.map((defect, index) => (
         <div key={defect.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-medium text-gray-500">
-              Angaben zum Mangel {defects.length > 1 ? `${index + 1}` : ''}
+              Angaben zum Mangel {condition.defects.length > 1 ? `${index + 1}` : ''}
             </h3>
             <button
               type="button"
@@ -130,7 +149,7 @@ const ZustandDesMietobjekts: React.FC = () => {
               { value: 'custom', label: 'Eigene Angabe' }
             ]}
             value={defect.room}
-            onChange={(value) => updateDefectRoom(defect.id, value)}
+            onChange={(value) => updateDefect(defect.id, 'room', value)}
             required
           />
 
@@ -139,7 +158,7 @@ const ZustandDesMietobjekts: React.FC = () => {
             <InputField
               label="Eigener Raum"
               value={defect.customRoom}
-              onChange={(value) => updateDefectCustomRoom(defect.id, value)}
+              onChange={(value) => updateDefect(defect.id, 'customRoom', value)}
               required
             />
           )}
@@ -147,7 +166,10 @@ const ZustandDesMietobjekts: React.FC = () => {
           <InputField
             label="Bemerkung"
             value={defect.notes}
-            onChange={(value) => updateDefectNotes(defect.id, value)}
+            onChange={(value) => updateDefect(defect.id, 'notes', value)}
+            multiline
+            rows={3}
+            required
           />
           
           <button

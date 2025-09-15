@@ -3,11 +3,24 @@ import Select from '../Select';
 import InputField from '../InputField';
 import DatePicker from '../DatePicker';
 
+// Local interface definition
+interface Meter {
+  id: number;
+  readingDate: string;
+  meterType: string;
+  customMeterType: string;
+  meterLocation: string;
+  customMeterLocation: string;
+  meterNumber: string;
+  meterReading: string;
+}
+
+
 const Zaehlererfassung: React.FC = () => {
-  const [meters, setMeters] = useState<{id: number, readingDate: string, meterType: string, customMeterType: string, meterLocation: string, customMeterLocation: string, meterNumber: string, meterReading: string}[]>([]);
+  const [meters, setMeters] = useState<Meter[]>([]);
 
   const addMeter = () => {
-    const newMeter = {
+    const newMeter: Meter = {
       id: Date.now(),
       readingDate: '',
       meterType: 'stromzaehler',
@@ -25,10 +38,16 @@ const Zaehlererfassung: React.FC = () => {
   };
 
   const updateMeter = (id: number, field: string, value: string) => {
-    setMeters(meters.map(meter => 
-      meter.id === id ? { ...meter, [field]: value } : meter
-    ));
+    const updatedMeters = meters.map(meter => {
+      if (meter.id === id) {
+        return { ...meter, [field]: value };
+      }
+      return meter;
+    });
+    setMeters(updatedMeters);
   };
+
+
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 space-y-6">

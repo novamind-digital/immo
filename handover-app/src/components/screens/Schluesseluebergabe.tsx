@@ -2,11 +2,20 @@ import React, { useState } from 'react';
 import Select from '../Select';
 import InputField from '../InputField';
 
+// Local interface definition
+interface Key {
+  id: number;
+  type: string;
+  customType: string;
+  quantity: string;
+}
+
+
 const Schluesseluebergabe: React.FC = () => {
-  const [keys, setKeys] = useState<{id: number, type: string, customType: string, quantity: string}[]>([]);
+  const [keys, setKeys] = useState<Key[]>([]);
 
   const addKey = () => {
-    const newKey = {
+    const newKey: Key = {
       id: Date.now(),
       type: 'haustuerschluessel',
       customType: '',
@@ -20,10 +29,13 @@ const Schluesseluebergabe: React.FC = () => {
   };
 
   const updateKey = (id: number, field: string, value: string) => {
-    setKeys(keys.map(key => 
+    const updatedKeys = keys.map(key => 
       key.id === id ? { ...key, [field]: value } : key
-    ));
+    );
+    setKeys(updatedKeys);
   };
+
+
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 space-y-6">

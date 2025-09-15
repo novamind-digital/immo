@@ -1,45 +1,65 @@
 import React, { useState } from 'react';
 import InputField from './InputField';
-// import RadioGroup from './RadioGroup';
 import DatePicker from './DatePicker';
 import Toggle from './Toggle';
 import Select from './Select';
 
-const SimpleForm: React.FC = () => {
-  const [rentalType, setRentalType] = useState('start');
-  const [managerType, setManagerType] = useState('verwalter');
-  const [selectedOwner, setSelectedOwner] = useState('');
-  const [ownerType, setOwnerType] = useState('person');
-  const [ownerTitle, setOwnerTitle] = useState('herr');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [ownerStreet, setOwnerStreet] = useState('');
-  const [ownerPostalCode, setOwnerPostalCode] = useState('');
-  const [ownerCity, setOwnerCity] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [tenants, setTenants] = useState([{
-    id: 1,
-    type: 'person',
-    title: 'herr',
-    firstName: '',
-    lastName: '',
-    companyName: '',
-    contactPerson: '',
-    street: '',
-    postalCode: '',
-    city: '',
-    phone: '',
-    email: '',
-    present: 'ja',
-    showBankDetails: false,
-    bankName: '',
-    bic: '',
-    iban: ''
-  }]);
-  const [startDate, setStartDate] = useState('');
+interface Address {
+  street: string;
+  postalCode: string;
+  city: string;
+}
 
-  const addTenant = () => {
-    const newTenant = {
+interface BankDetails {
+  iban: string;
+  bic: string;
+  bankName: string;
+}
+
+interface Tenant {
+  id: number;
+  type: 'person' | 'company';
+  title: 'herr' | 'frau' | 'divers';
+  firstName: string;
+  lastName: string;
+  companyName: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  present: 'ja' | 'nein';
+  address?: Address;
+  bankDetails?: BankDetails;
+}
+
+interface Manager {
+  type: 'verwalter' | 'eigentuemer';
+  selectedId: string;
+  customData?: {
+    type: 'person' | 'company';
+    title: 'herr' | 'frau' | 'divers';
+    firstName: string;
+    lastName: string;
+    companyName: string;
+    address: Address;
+  };
+}
+
+interface FormData {
+  rentalType: 'start' | 'end';
+  rentalDate: string;
+  manager: Manager;
+  tenants: Tenant[];
+}
+
+const SimpleForm: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
+    rentalType: 'start',
+    rentalDate: '',
+    manager: {
+      type: 'verwalter',
+      selectedId: '',
+    },
+    tenants: [{
       id: Date.now(),
       type: 'person',
       title: 'herr',
@@ -47,28 +67,122 @@ const SimpleForm: React.FC = () => {
       lastName: '',
       companyName: '',
       contactPerson: '',
-      street: '',
-      postalCode: '',
-      city: '',
       phone: '',
       email: '',
       present: 'ja',
-      showBankDetails: false,
-      bankName: '',
-      bic: '',
-      iban: ''
+    }]
+  });
+
+
+
+  // Helper functions for updating state
+  const updateRentalType = (rentalType: 'start' | 'end') => {
+    setFormData(prev => ({ ...prev, rentalType }));
+  };
+
+  const updateManagerType = (type: 'verwalter' | 'eigentuemer') => {
+    setFormData(prev => ({
+      ...prev,
+      manager: { ...prev.manager, type }
+    }));
+  };
+
+  const updateSelectedOwner = (selectedId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      manager: { ...prev.manager, selectedId }
+    }));
+  };
+
+  const updateOwnerCustomData = (field: string, value: any) => {
+    const currentCustomData = formData.manager.customData || {
+      type: 'person' as const,
+      title: 'herr' as const,
+      firstName: '',
+      lastName: '',
+      companyName: '',
+      address: { street: '', postalCode: '', city: '' }
     };
-    setTenants([...tenants, newTenant]);
+
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.');
+      setFormData(prev => ({
+        ...prev,
+        manager: {
+          ...prev.manager,
+          customData: {
+            ...currentCustomData,
+            [parent]: {
+              ...(currentCustomData[parent as keyof typeof currentCustomData] as any),
+              [child]: value
+            }
+          }
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        manager: {
+          ...prev.manager,
+          customData: {
+            ...currentCustomData,
+            [field]: value
+          }
+        }
+      }));
+    }
+  };
+
+  const updateRentalDate = (rentalDate: string) => {
+    setFormData(prev => ({ ...prev, rentalDate }));
+  };
+
+  const addTenant = () => {
+    const newTenant: Tenant = {
+      id: Date.now(),
+      type: 'person',
+      title: 'herr',
+      firstName: '',
+      lastName: '',
+      companyName: '',
+      contactPerson: '',
+      phone: '',
+      email: '',
+      present: 'ja',
+    };
+    setFormData(prev => ({
+      ...prev,
+      tenants: [...prev.tenants, newTenant]
+    }));
   };
 
   const removeTenant = (id: number) => {
-    setTenants(tenants.filter(tenant => tenant.id !== id));
+    setFormData(prev => ({
+      ...prev,
+      tenants: prev.tenants.filter(tenant => tenant.id !== id)
+    }));
   };
 
   const updateTenant = (id: number, field: string, value: any) => {
-    setTenants(tenants.map(tenant => 
-      tenant.id === id ? { ...tenant, [field]: value } : tenant
-    ));
+    setFormData(prev => ({
+      ...prev,
+      tenants: prev.tenants.map(tenant => {
+        if (tenant.id === id) {
+          if (field.includes('.')) {
+            const [parent, child] = field.split('.');
+            return {
+              ...tenant,
+              [parent]: {
+                ...(tenant[parent as keyof Tenant] as any),
+                [child]: value
+              }
+            };
+          }
+          return { ...tenant, [field]: value };
+        }
+        return tenant;
+      })
+    }));
   };
 
   return (
@@ -92,21 +206,21 @@ const SimpleForm: React.FC = () => {
             { value: 'start', label: 'Mietbeginn' },
             { value: 'end', label: 'Mietende' }
           ]}
-          value={rentalType}
-          onChange={setRentalType}
+          value={formData.rentalType}
+          onChange={updateRentalType}
         />
 
         <DatePicker
-          label={rentalType === 'start' ? 'Beginn Mietverhältnis' : 'Ende Mietverhältnis'}
-          value={startDate}
-          onChange={setStartDate}
+          label={formData.rentalType === 'start' ? 'Beginn Mietverhältnis' : 'Ende Mietverhältnis'}
+          value={formData.rentalDate}
+          onChange={updateRentalDate}
           required
         />
       </div>
 
       {/* Card 2: Angaben zum Eigentümer */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-        <h3 className="text-md font-medium text-gray-500 mb-4">Angaben zum {managerType === 'verwalter' ? 'Verwalter' : 'Eigentümer'}</h3>
+        <h3 className="text-md font-medium text-gray-500 mb-4">Angaben zum {formData.manager.type === 'verwalter' ? 'Verwalter' : 'Eigentümer'}</h3>
         
         <Toggle
           name="managerType"
@@ -114,25 +228,25 @@ const SimpleForm: React.FC = () => {
             { value: 'verwalter', label: 'Verwalter' },
             { value: 'eigentuemer', label: 'Eigentümer' }
           ]}
-          value={managerType}
-          onChange={setManagerType}
+          value={formData.manager.type}
+          onChange={updateManagerType}
         />
 
         <Select
-          label={`${managerType === 'verwalter' ? 'Verwalter' : 'Eigentümer'} auswählen`}
+          label={`${formData.manager.type === 'verwalter' ? 'Verwalter' : 'Eigentümer'} auswählen`}
           options={[
             { value: 'owner1', label: 'Mustermann GmbH' },
             { value: 'owner2', label: 'Schmidt Immobilien AG' },
             { value: 'owner3', label: 'Weber Properties KG' },
             { value: 'custom', label: 'Eigene Eingabe' }
           ]}
-          value={selectedOwner}
-          onChange={setSelectedOwner}
+          value={formData.manager.selectedId}
+          onChange={updateSelectedOwner}
           required
         />
         
         {/* Felder nur anzeigen wenn "Eigene Eingabe" ausgewählt */}
-        {selectedOwner === 'custom' && (
+        {formData.manager.selectedId === 'custom' && (
           <>
             <Toggle
               name="ownerType"
@@ -140,12 +254,12 @@ const SimpleForm: React.FC = () => {
                 { value: 'person', label: 'Person' },
                 { value: 'company', label: 'Firma' }
               ]}
-              value={ownerType}
-              onChange={setOwnerType}
+              value={formData.manager.customData?.type || 'person'}
+              onChange={(value) => updateOwnerCustomData('type', value)}
             />
 
             {/* Anrede Toggle - nur bei Person */}
-            {ownerType === 'person' && (
+            {formData.manager.customData?.type === 'person' && (
               <Toggle
                 name="ownerTitle"
                 options={[
@@ -153,79 +267,79 @@ const SimpleForm: React.FC = () => {
                   { value: 'frau', label: 'Frau' },
                   { value: 'divers', label: 'Divers' }
                 ]}
-                value={ownerTitle}
-                onChange={setOwnerTitle}
+                value={formData.manager.customData?.title || 'herr'}
+                onChange={(value) => updateOwnerCustomData('title', value)}
               />
             )}
 
-            {ownerType === 'person' && (
+            {formData.manager.customData?.type === 'person' && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <InputField
                     label="Vorname"
-                    value={firstName}
-                    onChange={setFirstName}
+                    value={formData.manager.customData?.firstName || ''}
+                    onChange={(value) => updateOwnerCustomData('firstName', value)}
                     required
                   />
                   <InputField
                     label="Nachname"
-                    value={lastName}
-                    onChange={setLastName}
+                    value={formData.manager.customData?.lastName || ''}
+                    onChange={(value) => updateOwnerCustomData('lastName', value)}
                     required
                   />
                 </div>
                 
                 <InputField
                   label="Straße und Hausnummer"
-                  value={ownerStreet}
-                  onChange={setOwnerStreet}
+                  value={formData.manager.customData?.address?.street || ''}
+                  onChange={(value) => updateOwnerCustomData('address.street', value)}
                   required
                 />
                 
                 <div className="grid grid-cols-2 gap-4">
                   <InputField
                     label="PLZ"
-                    value={ownerPostalCode}
-                    onChange={setOwnerPostalCode}
+                    value={formData.manager.customData?.address?.postalCode || ''}
+                    onChange={(value) => updateOwnerCustomData('address.postalCode', value)}
                     required
                   />
                   <InputField
                     label="Ort"
-                    value={ownerCity}
-                    onChange={setOwnerCity}
+                    value={formData.manager.customData?.address?.city || ''}
+                    onChange={(value) => updateOwnerCustomData('address.city', value)}
                     required
                   />
                 </div>
               </>
             )}
 
-            {ownerType === 'company' && (
+            {formData.manager.customData?.type === 'company' && (
               <>
                 <InputField
                   label="Firmenname"
-                  value={companyName}
-                  onChange={setCompanyName}
+                  value={formData.manager.customData?.companyName || ''}
+                  onChange={(value) => updateOwnerCustomData('companyName', value)}
                   required
                 />
                 
                 <InputField
                   label="Straße und Hausnummer"
-                  value={ownerStreet}
-                  onChange={setOwnerStreet}
+                  value={formData.manager.customData?.address?.street || ''}
+                  onChange={(value) => updateOwnerCustomData('address.street', value)}
                   required
                 />
                 
                 <div className="grid grid-cols-2 gap-4">
                   <InputField
                     label="PLZ"
-                    value={ownerPostalCode}
-                    onChange={setOwnerPostalCode}
+                    value={formData.manager.customData?.address?.postalCode || ''}
+                    onChange={(value) => updateOwnerCustomData('address.postalCode', value)}
                     required
                   />
                   <InputField
                     label="Ort"
-                    value={ownerCity}
-                    onChange={setOwnerCity}
+                    value={formData.manager.customData?.address?.city || ''}
+                    onChange={(value) => updateOwnerCustomData('address.city', value)}
                     required
                   />
                 </div>
@@ -236,13 +350,13 @@ const SimpleForm: React.FC = () => {
       </div>
 
       {/* Mieter Sektion */}
-      {tenants.map((tenant, index) => (
+      {formData.tenants.map((tenant, index) => (
         <div key={tenant.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-medium text-gray-500">
-              Angaben zum Mieter {tenants.length > 1 ? `${index + 1}` : ''}
+              Angaben zum Mieter {formData.tenants.length > 1 ? `${index + 1}` : ''}
             </h3>
-            {tenants.length > 1 && (
+            {formData.tenants.length > 1 && (
               <button
                 type="button"
                 onClick={() => removeTenant(tenant.id)}
@@ -293,29 +407,29 @@ const SimpleForm: React.FC = () => {
               </div>
 
               {/* Neue Adresse nur bei Mietende */}
-              {rentalType === 'end' && (
+              {formData.rentalType === 'end' && (
                 <>
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Neue Adresse</h4>
                     
                     <InputField
                       label="Straße und Hausnummer"
-                      value={tenant.street}
-                      onChange={(value) => updateTenant(tenant.id, 'street', value)}
+                      value={tenant.address?.street || ''}
+                      onChange={(value) => updateTenant(tenant.id, 'address.street', value)}
                       required
                     />
                     
                     <div className="grid grid-cols-2 gap-4">
                       <InputField
                         label="PLZ"
-                        value={tenant.postalCode}
-                        onChange={(value) => updateTenant(tenant.id, 'postalCode', value)}
+                        value={tenant.address?.postalCode || ''}
+                        onChange={(value) => updateTenant(tenant.id, 'address.postalCode', value)}
                         required
                       />
                       <InputField
                         label="Ort"
-                        value={tenant.city}
-                        onChange={(value) => updateTenant(tenant.id, 'city', value)}
+                        value={tenant.address?.city || ''}
+                        onChange={(value) => updateTenant(tenant.id, 'address.city', value)}
                         required
                       />
                     </div>
@@ -343,22 +457,22 @@ const SimpleForm: React.FC = () => {
               
               <InputField
                 label="Straße und Hausnummer"
-                value={tenant.street}
-                onChange={(value) => updateTenant(tenant.id, 'street', value)}
+                value={tenant.address?.street || ''}
+                onChange={(value) => updateTenant(tenant.id, 'address.street', value)}
                 required
               />
               
               <div className="grid grid-cols-2 gap-4">
                 <InputField
                   label="PLZ"
-                  value={tenant.postalCode}
-                  onChange={(value) => updateTenant(tenant.id, 'postalCode', value)}
+                  value={tenant.address?.postalCode || ''}
+                  onChange={(value) => updateTenant(tenant.id, 'address.postalCode', value)}
                   required
                 />
                 <InputField
                   label="Ort"
-                  value={tenant.city}
-                  onChange={(value) => updateTenant(tenant.id, 'city', value)}
+                  value={tenant.address?.city || ''}
+                  onChange={(value) => updateTenant(tenant.id, 'address.city', value)}
                   required
                 />
               </div>
@@ -394,10 +508,10 @@ const SimpleForm: React.FC = () => {
           />
 
           {/* Bankdaten Button */}
-          {!tenant.showBankDetails && (
+          {!tenant.bankDetails && (
             <button
               type="button"
-              onClick={() => updateTenant(tenant.id, 'showBankDetails', true)}
+              onClick={() => updateTenant(tenant.id, 'bankDetails', { iban: '', bic: '', bankName: '' })}
               className="w-full px-4 py-3 mt-4 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             >
               Bankdaten hinzufügen
@@ -405,45 +519,35 @@ const SimpleForm: React.FC = () => {
           )}
 
           {/* Bankdaten Felder */}
-          {tenant.showBankDetails && (
+          {tenant.bankDetails && (
             <>
               <div className="mt-4">
                 <h4 className="text-sm font-medium text-gray-700 mb-3">Bankdaten</h4>
                 <InputField
                   label="IBAN"
-                  value={tenant.iban}
-                  onChange={(value) => updateTenant(tenant.id, 'iban', value)}
+                  value={tenant.bankDetails.iban}
+                  onChange={(value) => updateTenant(tenant.id, 'bankDetails.iban', value)}
                   required
                 />
                 
                 <div className="grid grid-cols-2 gap-4">
                   <InputField
                     label="BIC"
-                    value={tenant.bic}
-                    onChange={(value) => updateTenant(tenant.id, 'bic', value)}
+                    value={tenant.bankDetails.bic}
+                    onChange={(value) => updateTenant(tenant.id, 'bankDetails.bic', value)}
                     required
                   />
                   <InputField
                     label="Bankname"
-                    value={tenant.bankName}
-                    onChange={(value) => updateTenant(tenant.id, 'bankName', value)}
+                    value={tenant.bankDetails.bankName}
+                    onChange={(value) => updateTenant(tenant.id, 'bankDetails.bankName', value)}
                     required
                   />
                 </div>
                 
                 <button
                   type="button"
-                  onClick={() => {
-                    setTenants(tenants.map(t => 
-                      t.id === tenant.id ? { 
-                        ...t, 
-                        showBankDetails: false,
-                        bankName: '',
-                        bic: '',
-                        iban: ''
-                      } : t
-                    ));
-                  }}
+                  onClick={() => updateTenant(tenant.id, 'bankDetails', undefined)}
                   className="text-sm text-red-600 hover:text-red-700 mt-2"
                 >
                   Bankdaten entfernen
@@ -462,6 +566,7 @@ const SimpleForm: React.FC = () => {
       >
         Mieter hinzufügen
       </button>
+
 
     </div>
   );
