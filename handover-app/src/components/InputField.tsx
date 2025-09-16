@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 
 interface InputFieldProps {
   label: string;
@@ -75,4 +75,4 @@ const InputField: React.FC<InputFieldProps> = ({
   );
 };
 
-export default InputField;
+export default memo(InputField);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface ToggleOption {
   value: string;
@@ -47,4 +47,4 @@ const Toggle: React.FC<ToggleProps> = ({
   );
 };
 
-export default Toggle;
+export default memo(Toggle);

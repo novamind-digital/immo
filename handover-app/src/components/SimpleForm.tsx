@@ -1,91 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import InputField from './InputField';
 import DatePicker from './DatePicker';
 import Toggle from './Toggle';
 import Select from './Select';
-
-interface Address {
-  street: string;
-  postalCode: string;
-  city: string;
-}
-
-interface BankDetails {
-  iban: string;
-  bic: string;
-  bankName: string;
-}
-
-interface Tenant {
-  id: number;
-  type: 'person' | 'company';
-  title: 'herr' | 'frau' | 'divers';
-  firstName: string;
-  lastName: string;
-  companyName: string;
-  contactPerson: string;
-  phone: string;
-  email: string;
-  present: 'ja' | 'nein';
-  address?: Address;
-  bankDetails?: BankDetails;
-}
-
-interface Manager {
-  type: 'verwalter' | 'eigentuemer';
-  selectedId: string;
-  customData?: {
-    type: 'person' | 'company';
-    title: 'herr' | 'frau' | 'divers';
-    firstName: string;
-    lastName: string;
-    companyName: string;
-    address: Address;
-  };
-}
-
-interface FormData {
-  rentalType: 'start' | 'end';
-  rentalDate: string;
-  manager: Manager;
-  tenants: Tenant[];
-}
+import { useFormData } from '../hooks/useFormData';
 
 const SimpleForm: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
-    rentalType: 'start',
-    rentalDate: '',
-    manager: {
-      type: 'verwalter',
-      selectedId: '',
-    },
-    tenants: [{
-      id: Date.now(),
-      type: 'person',
-      title: 'herr',
-      firstName: '',
-      lastName: '',
-      companyName: '',
-      contactPerson: '',
-      phone: '',
-      email: '',
-      present: 'ja',
-    }]
-  });
-
-
-
-  // Helper functions for updating state
-  const updateRentalType = (rentalType: 'start' | 'end') => {
-    setFormData(prev => ({ ...prev, rentalType }));
-  };
-
-  const updateManagerType = (type: 'verwalter' | 'eigentuemer') => {
-    setFormData(prev => ({
-      ...prev,
-      manager: { ...prev.manager, type }
-    }));
-  };
+  const {
+    formData,
+    updateRentalType,
+    updateRentalDate,
+    updateManagerType,
+    updateSelectedOwner,
+    updateOwnerCustomData,
+    addTenant,
+    removeTenant,
+    updateTenant,
+  } = useFormData();
 
   // Wrapper functions for Toggle component compatibility
   const handleRentalTypeChange = (value: string) => {
@@ -94,104 +25,6 @@ const SimpleForm: React.FC = () => {
 
   const handleManagerTypeChange = (value: string) => {
     updateManagerType(value as 'verwalter' | 'eigentuemer');
-  };
-
-  const updateSelectedOwner = (selectedId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      manager: { ...prev.manager, selectedId }
-    }));
-  };
-
-  const updateOwnerCustomData = (field: string, value: any) => {
-    const currentCustomData = formData.manager.customData || {
-      type: 'person' as const,
-      title: 'herr' as const,
-      firstName: '',
-      lastName: '',
-      companyName: '',
-      address: { street: '', postalCode: '', city: '' }
-    };
-
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      setFormData(prev => ({
-        ...prev,
-        manager: {
-          ...prev.manager,
-          customData: {
-            ...currentCustomData,
-            [parent]: {
-              ...(currentCustomData[parent as keyof typeof currentCustomData] as any),
-              [child]: value
-            }
-          }
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        manager: {
-          ...prev.manager,
-          customData: {
-            ...currentCustomData,
-            [field]: value
-          }
-        }
-      }));
-    }
-  };
-
-  const updateRentalDate = (rentalDate: string) => {
-    setFormData(prev => ({ ...prev, rentalDate }));
-  };
-
-  const addTenant = () => {
-    const newTenant: Tenant = {
-      id: Date.now(),
-      type: 'person',
-      title: 'herr',
-      firstName: '',
-      lastName: '',
-      companyName: '',
-      contactPerson: '',
-      phone: '',
-      email: '',
-      present: 'ja',
-    };
-    setFormData(prev => ({
-      ...prev,
-      tenants: [...prev.tenants, newTenant]
-    }));
-  };
-
-  const removeTenant = (id: number) => {
-    setFormData(prev => ({
-      ...prev,
-      tenants: prev.tenants.filter(tenant => tenant.id !== id)
-    }));
-  };
-
-  const updateTenant = (id: number, field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      tenants: prev.tenants.map(tenant => {
-        if (tenant.id === id) {
-          if (field.includes('.')) {
-            const [parent, child] = field.split('.');
-            return {
-              ...tenant,
-              [parent]: {
-                ...(tenant[parent as keyof Tenant] as any),
-                [child]: value
-              }
-            };
-          }
-          return { ...tenant, [field]: value };
-        }
-        return tenant;
-      })
-    }));
   };
 
   return (
