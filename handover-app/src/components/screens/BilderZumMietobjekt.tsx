@@ -1,17 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Select from '../Select';
 import InputField from '../InputField';
-
-interface Photo {
-  id: number;
-  room: string;
-  customRoom: string;
-  description: string;
-}
-
+import { useHandoverArrayStep } from '../../hooks/useHandoverStep';
+import type { Photo } from '../../types/handover';
 
 const BilderZumMietobjekt: React.FC = () => {
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const { data: photos, addItem, removeItem, updateItem } = useHandoverArrayStep('photos');
 
   const addPhoto = () => {
     const newPhoto: Photo = {
@@ -20,18 +14,21 @@ const BilderZumMietobjekt: React.FC = () => {
       customRoom: '',
       description: ''
     };
-    setPhotos([...photos, newPhoto]);
+    addItem(newPhoto);
   };
 
   const removePhoto = (id: number) => {
-    setPhotos(photos.filter(photo => photo.id !== id));
+    const index = photos.findIndex(photo => photo.id === id);
+    if (index !== -1) {
+      removeItem(index);
+    }
   };
 
   const updatePhoto = (id: number, field: string, value: string) => {
-    const updatedPhotos = photos.map(photo => 
-      photo.id === id ? { ...photo, [field]: value } : photo
-    );
-    setPhotos(updatedPhotos);
+    const index = photos.findIndex(photo => photo.id === id);
+    if (index !== -1) {
+      updateItem(index, { [field]: value });
+    }
   };
 
 

@@ -1,18 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Select from '../Select';
 import InputField from '../InputField';
-
-// Local interface definition
-interface Key {
-  id: number;
-  type: string;
-  customType: string;
-  quantity: string;
-}
-
+import { useHandoverArrayStep } from '../../hooks/useHandoverStep';
+import type { Key } from '../../types/handover';
 
 const Schluesseluebergabe: React.FC = () => {
-  const [keys, setKeys] = useState<Key[]>([]);
+  const { data: keys, addItem, removeItem, updateItem } = useHandoverArrayStep('keys');
 
   const addKey = () => {
     const newKey: Key = {
@@ -21,18 +14,21 @@ const Schluesseluebergabe: React.FC = () => {
       customType: '',
       quantity: '1'
     };
-    setKeys([...keys, newKey]);
+    addItem(newKey);
   };
 
   const removeKey = (id: number) => {
-    setKeys(keys.filter(key => key.id !== id));
+    const index = keys.findIndex(key => key.id === id);
+    if (index !== -1) {
+      removeItem(index);
+    }
   };
 
   const updateKey = (id: number, field: string, value: string) => {
-    const updatedKeys = keys.map(key => 
-      key.id === id ? { ...key, [field]: value } : key
-    );
-    setKeys(updatedKeys);
+    const index = keys.findIndex(key => key.id === id);
+    if (index !== -1) {
+      updateItem(index, { [field]: value });
+    }
   };
 
 

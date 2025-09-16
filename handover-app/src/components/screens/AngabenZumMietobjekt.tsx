@@ -3,32 +3,15 @@ import Select from '../Select';
 import InputField from '../InputField';
 import RadioGroup from '../RadioGroup';
 import Toggle from '../Toggle';
-
-interface PropertyData {
-  selectedAddress: string;
-  customAddress?: { street: string; postalCode: string; city: string };
-  propertyType: string;
-  customPropertyType?: string;
-  selectedFloors: string[];
-  designations?: { wohneinheit?: string; stellplatz?: string; gewerbeeinheit?: string };
-}
+import { useHandoverStep } from '../../hooks/useHandoverStep';
+import type { Cellar, Inventory, BuiltInKitchen } from '../../types/handover';
 
 const AngabenZumMietobjekt: React.FC = () => {
-  const [property, setProperty] = useState<PropertyData>({
-    selectedAddress: '',
-    propertyType: '',
-    selectedFloors: []
-  });
+  const { data: property, updateData } = useHandoverStep('property');
 
-
-  
   const [showDesignations, setShowDesignations] = useState(
     !!(property.designations?.wohneinheit || property.designations?.stellplatz || property.designations?.gewerbeeinheit)
   );
-  const [hasBuiltInKitchen, setHasBuiltInKitchen] = useState('nein');
-  const [kitchenCondition, setKitchenCondition] = useState('neu');
-  const [cellars, setCellars] = useState<{id: number, name: string}[]>([]);
-  const [inventories, setInventories] = useState<{id: number, name: string, condition: string}[]>([]);
 
   const floors = [
     '3. UG', '2. UG', '1. UG', 'EG',
@@ -38,89 +21,113 @@ const AngabenZumMietobjekt: React.FC = () => {
 
   // Helper functions for updating property data
   const updateSelectedAddress = (selectedAddress: string) => {
-    setProperty(prev => ({ ...prev, selectedAddress }));
+    updateData({ selectedAddress });
   };
 
   const updateCustomAddress = (field: string, value: string) => {
-    setProperty(prev => ({
-      ...prev,
-      customAddress: {
-        street: prev.customAddress?.street || '',
-        postalCode: prev.customAddress?.postalCode || '',
-        city: prev.customAddress?.city || '',
-        [field]: value
-      }
-    }));
+    const customAddress = {
+      street: property.customAddress?.street || '',
+      postalCode: property.customAddress?.postalCode || '',
+      city: property.customAddress?.city || '',
+      [field]: value
+    };
+    updateData({ customAddress });
   };
 
   const updatePropertyType = (propertyType: string) => {
-    setProperty(prev => ({ ...prev, propertyType }));
+    updateData({ propertyType });
   };
 
   const updateCustomPropertyType = (customPropertyType: string) => {
-    setProperty(prev => ({ ...prev, customPropertyType }));
+    updateData({ customPropertyType });
   };
 
   const toggleFloor = (floor: string) => {
-    setProperty(prev => {
-      const newFloors = prev.selectedFloors.includes(floor) 
-        ? prev.selectedFloors.filter(f => f !== floor)
-        : [...prev.selectedFloors, floor];
-      return { ...prev, selectedFloors: newFloors };
-    });
+    const newFloors = property.selectedFloors.includes(floor) 
+      ? property.selectedFloors.filter(f => f !== floor)
+      : [...property.selectedFloors, floor];
+    updateData({ selectedFloors: newFloors });
   };
 
   const updateDesignation = (field: string, value: string) => {
-    setProperty(prev => ({
-      ...prev,
-      designations: {
-        ...prev.designations,
-        [field]: value
-      }
-    }));
+    const designations = {
+      ...property.designations,
+      [field]: value
+    };
+    updateData({ designations });
   };
 
+  // Einbauküche functions
+  const updateBuiltInKitchen = (hasBuiltInKitchen: 'ja' | 'nein') => {
+    const builtInKitchen: BuiltInKitchen = {
+      hasBuiltInKitchen,
+      condition: hasBuiltInKitchen === 'ja' ? 'neu' : undefined
+    };
+    updateData({ builtInKitchen });
+  };
+
+  const updateKitchenCondition = (condition: 'neu' | 'neuwertig' | 'gebraucht' | 'stark_abgenutzt') => {
+    const builtInKitchen: BuiltInKitchen = {
+      ...property.builtInKitchen,
+      hasBuiltInKitchen: property.builtInKitchen?.hasBuiltInKitchen || 'ja',
+      condition
+    };
+    updateData({ builtInKitchen });
+  };
+
+  // Keller functions
   const addCellar = () => {
-    const newCellar = {
+    const newCellar: Cellar = {
       id: Date.now(),
       name: ''
     };
-    setCellars([...cellars, newCellar]);
+    const cellars = property.cellars || [];
+    updateData({ cellars: [...cellars, newCellar] });
   };
 
   const removeCellar = (id: number) => {
-    setCellars(cellars.filter(cellar => cellar.id !== id));
+    const cellars = property.cellars || [];
+    updateData({ cellars: cellars.filter(cellar => cellar.id !== id) });
   };
 
   const updateCellarName = (id: number, name: string) => {
-    setCellars(cellars.map(cellar => 
+    const cellars = property.cellars || [];
+    const updatedCellars = cellars.map(cellar => 
       cellar.id === id ? { ...cellar, name } : cellar
-    ));
+    );
+    updateData({ cellars: updatedCellars });
   };
 
+  // Inventar functions
   const addInventory = () => {
-    const newInventory = {
+    const newInventory: Inventory = {
       id: Date.now(),
       name: '',
       condition: 'neu'
     };
-    setInventories([...inventories, newInventory]);
+    const inventories = property.inventories || [];
+    updateData({ inventories: [...inventories, newInventory] });
   };
 
   const removeInventory = (id: number) => {
-    setInventories(inventories.filter(inventory => inventory.id !== id));
+    const inventories = property.inventories || [];
+    updateData({ inventories: inventories.filter(inventory => inventory.id !== id) });
   };
 
   const updateInventoryName = (id: number, name: string) => {
-    setInventories(inventories.map(inventory => 
+    const inventories = property.inventories || [];
+    const updatedInventories = inventories.map(inventory => 
       inventory.id === id ? { ...inventory, name } : inventory
-    ));
+    );
+    updateData({ inventories: updatedInventories });
   };
 
-  const updateInventoryCondition = (id: number, condition: string) => {
-    setInventories(inventories.map(inventory => 
+  const updateInventoryCondition = (id: number, condition: 'neu' | 'neuwertig' | 'gebraucht' | 'stark_abgenutzt') => {
+    const inventories = property.inventories || [];
+    const updatedInventories = inventories.map(inventory => 
       inventory.id === id ? { ...inventory, condition } : inventory
-    ));
+    );
+    updateData({ inventories: updatedInventories });
   };
 
   return (
@@ -265,7 +272,7 @@ const AngabenZumMietobjekt: React.FC = () => {
               type="button"
               onClick={() => {
                 setShowDesignations(false);
-                setProperty(prev => ({ ...prev, designations: undefined }));
+                updateData({ designations: undefined });
               }}
               className="text-sm text-red-600 hover:text-red-700 mt-2"
             >
@@ -283,12 +290,12 @@ const AngabenZumMietobjekt: React.FC = () => {
               { value: 'nein', label: 'Nein' },
               { value: 'ja', label: 'Ja' }
             ]}
-            value={hasBuiltInKitchen}
-            onChange={setHasBuiltInKitchen}
+            value={property.builtInKitchen?.hasBuiltInKitchen || 'nein'}
+            onChange={updateBuiltInKitchen}
           />
           
           {/* Zusätzliche Felder wenn Einbauküche vorhanden */}
-          {hasBuiltInKitchen === 'ja' && (
+          {property.builtInKitchen?.hasBuiltInKitchen === 'ja' && (
             <>
               <RadioGroup
                 label="Zustand der Einbauküche"
@@ -299,8 +306,8 @@ const AngabenZumMietobjekt: React.FC = () => {
                   { value: 'gebraucht', label: 'Gebraucht' },
                   { value: 'stark_abgenutzt', label: 'Stark abgenutzt' }
                 ]}
-                value={kitchenCondition}
-                onChange={setKitchenCondition}
+                value={property.builtInKitchen?.condition || 'neu'}
+                onChange={updateKitchenCondition}
               />
               
               <button
@@ -319,11 +326,11 @@ const AngabenZumMietobjekt: React.FC = () => {
       </div>
       
       {/* Keller Cards */}
-      {cellars.map((cellar, index) => (
+      {(property.cellars || []).map((cellar, index) => (
         <div key={cellar.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-medium text-gray-500">
-              Angaben zum Keller {cellars.length > 1 ? `${index + 1}` : ''}
+              Angaben zum Keller {(property.cellars || []).length > 1 ? `${index + 1}` : ''}
             </h3>
             <button
               type="button"
@@ -355,11 +362,11 @@ const AngabenZumMietobjekt: React.FC = () => {
       ))}
 
       {/* Inventar Cards */}
-      {inventories.map((inventory, index) => (
+      {(property.inventories || []).map((inventory, index) => (
         <div key={inventory.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-medium text-gray-500">
-              Angaben zum Inventar {inventories.length > 1 ? `${index + 1}` : ''}
+              Angaben zum Inventar {(property.inventories || []).length > 1 ? `${index + 1}` : ''}
             </h3>
             <button
               type="button"
@@ -387,7 +394,7 @@ const AngabenZumMietobjekt: React.FC = () => {
               { value: 'stark_abgenutzt', label: 'Stark abgenutzt' }
             ]}
             value={inventory.condition}
-            onChange={(value) => updateInventoryCondition(inventory.id, value)}
+            onChange={(value) => updateInventoryCondition(inventory.id, value as 'neu' | 'neuwertig' | 'gebraucht' | 'stark_abgenutzt')}
           />
           
           <button

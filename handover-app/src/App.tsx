@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useHandover } from './context/HandoverContext';
 import ProgressIndicatorSimple from './components/ProgressIndicatorSimple';
 import SimpleForm from './components/SimpleForm';
 import AngabenZumMietobjekt from './components/screens/AngabenZumMietobjekt';
@@ -12,22 +13,38 @@ import Protokollversand from './components/screens/Protokollversand';
 import { HANDOVER_STEPS } from './constants/steps';
 
 function App() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const { state, saveHandover } = useHandover();
+  const [currentStep, setCurrentStep] = useState(() => {
+    // Load saved step from localStorage on initial load
+    const saved = localStorage.getItem('handover_currentStep');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+  // Save current step to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('handover_currentStep', currentStep.toString());
+  }, [currentStep]);
 
-  const handleStepClick = (stepIndex: number) => {
+  const handleStepClick = async (stepIndex: number) => {
+    // Auto-save before switching steps
+    await saveHandover();
     setCurrentStep(stepIndex);
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
     if (currentStep > 0) {
+      // Auto-save before switching steps
+      await saveHandover();
       setCurrentStep(currentStep - 1);
     }
   };
 
-  const handleNext = () => {
-    if (currentStep < HANDOVER_STEPS.length - 1) {
+  const handleNext = async () => {
+    if (currentStep < 8) {  // Normal navigation through steps
+      // Auto-save before switching steps
+      await saveHandover();
       setCurrentStep(currentStep + 1);
     }
+    // Note: Step 8 is the final step (Protokollversand), no next step needed
   };
 
   const renderCurrentScreen = () => {
@@ -83,14 +100,16 @@ function App() {
               Zurück
             </button>
           )}
-          <button
-            onClick={handleNext}
-            className={`px-6 py-3 rounded-xl font-medium transition-colors bg-blue-500 text-white hover:bg-blue-600 ${
-              currentStep === 0 ? 'w-full' : 'w-1/2'
-            }`}
-          >
-            {currentStep === HANDOVER_STEPS.length - 1 ? 'Abschließen' : 'Weiter'}
-          </button>
+          {currentStep < 8 && (
+            <button
+              onClick={handleNext}
+              className={`px-6 py-3 rounded-xl font-medium transition-colors bg-blue-500 text-white hover:bg-blue-600 ${
+                currentStep === 0 ? 'w-full' : 'w-1/2'
+              }`}
+            >
+              Weiter
+            </button>
+          )}
         </div>
       </div>
     </div>

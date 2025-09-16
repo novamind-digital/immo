@@ -3,20 +3,77 @@ import InputField from './InputField';
 import DatePicker from './DatePicker';
 import Toggle from './Toggle';
 import Select from './Select';
-import { useFormData } from '../hooks/useFormData';
+import { useHandoverStep } from '../hooks/useHandoverStep';
+import type { Tenant } from '../types/handover';
 
 const SimpleForm: React.FC = () => {
-  const {
-    formData,
-    updateRentalType,
-    updateRentalDate,
-    updateManagerType,
-    updateSelectedOwner,
-    updateOwnerCustomData,
-    addTenant,
-    removeTenant,
-    updateTenant,
-  } = useFormData();
+  const { data: generalData, updateData } = useHandoverStep('general');
+
+  // Helper functions to update specific parts of general data
+  const updateRentalType = (rentalType: 'start' | 'end') => {
+    updateData({ rentalType });
+  };
+
+  const updateRentalDate = (rentalDate: string) => {
+    updateData({ rentalDate });
+  };
+
+  const updateManagerType = (type: 'verwalter' | 'eigentuemer') => {
+    updateData({ 
+      manager: { ...generalData.manager, type } 
+    });
+  };
+
+  const updateSelectedOwner = (selectedId: string) => {
+    updateData({ 
+      manager: { ...generalData.manager, selectedId } 
+    });
+  };
+
+  const addTenant = () => {
+    const newTenant: Tenant = {
+      id: Date.now(),
+      type: 'person',
+      title: 'herr',
+      firstName: '',
+      lastName: '',
+      companyName: '',
+      contactPerson: '',
+      phone: '',
+      email: '',
+      present: 'ja',
+    };
+    updateData({ 
+      tenants: [...generalData.tenants, newTenant] 
+    });
+  };
+
+  const removeTenant = (id: number) => {
+    updateData({ 
+      tenants: generalData.tenants.filter(tenant => tenant.id !== id) 
+    });
+  };
+
+  const updateTenant = (id: number, field: keyof Tenant, value: any) => {
+    updateData({ 
+      tenants: generalData.tenants.map(tenant => 
+        tenant.id === id ? { ...tenant, [field]: value } : tenant
+      )
+    });
+  };
+
+  const updateOwnerCustomData = (field: string, value: any) => {
+    const customData = generalData.manager.customData || { type: 'person', address: { street: '', postalCode: '', city: '' } };
+    updateData({
+      manager: {
+        ...generalData.manager,
+        customData: {
+          ...customData,
+          [field]: value
+        }
+      }
+    });
+  };
 
   // Wrapper functions for Toggle component compatibility
   const handleRentalTypeChange = (value: string) => {
@@ -48,13 +105,13 @@ const SimpleForm: React.FC = () => {
             { value: 'start', label: 'Mietbeginn' },
             { value: 'end', label: 'Mietende' }
           ]}
-          value={formData.rentalType}
+          value={generalData.rentalType}
           onChange={handleRentalTypeChange}
         />
 
         <DatePicker
-          label={formData.rentalType === 'start' ? 'Beginn Mietverhältnis' : 'Ende Mietverhältnis'}
-          value={formData.rentalDate}
+          label={generalData.rentalType === 'start' ? 'Beginn Mietverhältnis' : 'Ende Mietverhältnis'}
+          value={generalData.rentalDate}
           onChange={updateRentalDate}
           required
         />
@@ -62,7 +119,7 @@ const SimpleForm: React.FC = () => {
 
       {/* Card 2: Angaben zum Eigentümer */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-        <h3 className="text-md font-medium text-gray-500 mb-4">Angaben zum {formData.manager.type === 'verwalter' ? 'Verwalter' : 'Eigentümer'}</h3>
+        <h3 className="text-md font-medium text-gray-500 mb-4">Angaben zum {generalData.manager.type === 'verwalter' ? 'Verwalter' : 'Eigentümer'}</h3>
         
         <Toggle
           name="managerType"
@@ -70,25 +127,25 @@ const SimpleForm: React.FC = () => {
             { value: 'verwalter', label: 'Verwalter' },
             { value: 'eigentuemer', label: 'Eigentümer' }
           ]}
-          value={formData.manager.type}
+          value={generalData.manager.type}
           onChange={handleManagerTypeChange}
         />
 
         <Select
-          label={`${formData.manager.type === 'verwalter' ? 'Verwalter' : 'Eigentümer'} auswählen`}
+          label={`${generalData.manager.type === 'verwalter' ? 'Verwalter' : 'Eigentümer'} auswählen`}
           options={[
             { value: 'owner1', label: 'Mustermann GmbH' },
             { value: 'owner2', label: 'Schmidt Immobilien AG' },
             { value: 'owner3', label: 'Weber Properties KG' },
             { value: 'custom', label: 'Eigene Eingabe' }
           ]}
-          value={formData.manager.selectedId}
+          value={generalData.manager.selectedId}
           onChange={updateSelectedOwner}
           required
         />
         
         {/* Felder nur anzeigen wenn "Eigene Eingabe" ausgewählt */}
-        {formData.manager.selectedId === 'custom' && (
+        {generalData.manager.selectedId === 'custom' && (
           <>
             <Toggle
               name="ownerType"
@@ -96,12 +153,12 @@ const SimpleForm: React.FC = () => {
                 { value: 'person', label: 'Person' },
                 { value: 'company', label: 'Firma' }
               ]}
-              value={formData.manager.customData?.type || 'person'}
+              value={generalData.manager.customData?.type || 'person'}
               onChange={(value) => updateOwnerCustomData('type', value)}
             />
 
             {/* Anrede Toggle - nur bei Person */}
-            {formData.manager.customData?.type === 'person' && (
+            {generalData.manager.customData?.type === 'person' && (
               <Toggle
                 name="ownerTitle"
                 options={[
@@ -109,23 +166,23 @@ const SimpleForm: React.FC = () => {
                   { value: 'frau', label: 'Frau' },
                   { value: 'divers', label: 'Divers' }
                 ]}
-                value={formData.manager.customData?.title || 'herr'}
+                value={generalData.manager.customData?.title || 'herr'}
                 onChange={(value) => updateOwnerCustomData('title', value)}
               />
             )}
 
-            {formData.manager.customData?.type === 'person' && (
+            {generalData.manager.customData?.type === 'person' && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <InputField
                     label="Vorname"
-                    value={formData.manager.customData?.firstName || ''}
+                    value={generalData.manager.customData?.firstName || ''}
                     onChange={(value) => updateOwnerCustomData('firstName', value)}
                     required
                   />
                   <InputField
                     label="Nachname"
-                    value={formData.manager.customData?.lastName || ''}
+                    value={generalData.manager.customData?.lastName || ''}
                     onChange={(value) => updateOwnerCustomData('lastName', value)}
                     required
                   />
@@ -133,7 +190,7 @@ const SimpleForm: React.FC = () => {
                 
                 <InputField
                   label="Straße und Hausnummer"
-                  value={formData.manager.customData?.address?.street || ''}
+                  value={generalData.manager.customData?.address?.street || ''}
                   onChange={(value) => updateOwnerCustomData('address.street', value)}
                   required
                 />
@@ -141,13 +198,13 @@ const SimpleForm: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <InputField
                     label="PLZ"
-                    value={formData.manager.customData?.address?.postalCode || ''}
+                    value={generalData.manager.customData?.address?.postalCode || ''}
                     onChange={(value) => updateOwnerCustomData('address.postalCode', value)}
                     required
                   />
                   <InputField
                     label="Ort"
-                    value={formData.manager.customData?.address?.city || ''}
+                    value={generalData.manager.customData?.address?.city || ''}
                     onChange={(value) => updateOwnerCustomData('address.city', value)}
                     required
                   />
@@ -155,18 +212,18 @@ const SimpleForm: React.FC = () => {
               </>
             )}
 
-            {formData.manager.customData?.type === 'company' && (
+            {generalData.manager.customData?.type === 'company' && (
               <>
                 <InputField
                   label="Firmenname"
-                  value={formData.manager.customData?.companyName || ''}
+                  value={generalData.manager.customData?.companyName || ''}
                   onChange={(value) => updateOwnerCustomData('companyName', value)}
                   required
                 />
                 
                 <InputField
                   label="Straße und Hausnummer"
-                  value={formData.manager.customData?.address?.street || ''}
+                  value={generalData.manager.customData?.address?.street || ''}
                   onChange={(value) => updateOwnerCustomData('address.street', value)}
                   required
                 />
@@ -174,13 +231,13 @@ const SimpleForm: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <InputField
                     label="PLZ"
-                    value={formData.manager.customData?.address?.postalCode || ''}
+                    value={generalData.manager.customData?.address?.postalCode || ''}
                     onChange={(value) => updateOwnerCustomData('address.postalCode', value)}
                     required
                   />
                   <InputField
                     label="Ort"
-                    value={formData.manager.customData?.address?.city || ''}
+                    value={generalData.manager.customData?.address?.city || ''}
                     onChange={(value) => updateOwnerCustomData('address.city', value)}
                     required
                   />
@@ -192,13 +249,13 @@ const SimpleForm: React.FC = () => {
       </div>
 
       {/* Mieter Sektion */}
-      {formData.tenants.map((tenant, index) => (
+      {generalData.tenants.map((tenant, index) => (
         <div key={tenant.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-md font-medium text-gray-500">
-              Angaben zum Mieter {formData.tenants.length > 1 ? `${index + 1}` : ''}
+              Angaben zum Mieter {generalData.tenants.length > 1 ? `${index + 1}` : ''}
             </h3>
-            {formData.tenants.length > 1 && (
+            {generalData.tenants.length > 1 && (
               <button
                 type="button"
                 onClick={() => removeTenant(tenant.id)}
@@ -249,7 +306,7 @@ const SimpleForm: React.FC = () => {
               </div>
 
               {/* Neue Adresse nur bei Mietende */}
-              {formData.rentalType === 'end' && (
+              {generalData.rentalType === 'end' && (
                 <>
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-3">Neue Adresse</h4>

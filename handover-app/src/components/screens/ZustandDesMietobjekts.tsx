@@ -1,35 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import RadioGroup from '../RadioGroup';
 import Select from '../Select';
 import InputField from '../InputField';
-
-// Local interface definitions
-interface Defect {
-  id: number;
-  room: string;
-  customRoom: string;
-  notes: string;
-}
-
-interface Condition {
-  overallCondition: string;
-  cleanlinessConditions: string[];
-  defects: Defect[];
-}
-
+import { useHandoverStep } from '../../hooks/useHandoverStep';
+import type { Defect } from '../../types/handover';
 
 const ZustandDesMietobjekts: React.FC = () => {
-  const [condition, setCondition] = useState<Condition>({
-    overallCondition: '',
-    cleanlinessConditions: [],
-    defects: []
-  });
+  const { data: condition, updateData } = useHandoverStep('condition');
 
 
 
 
   const updateOverallCondition = (overallCondition: string) => {
-    setCondition(prev => ({ ...prev, overallCondition }));
+    updateData({ overallCondition });
   };
 
   const toggleCleanlinessCondition = (conditionValue: string) => {
@@ -37,7 +20,7 @@ const ZustandDesMietobjekts: React.FC = () => {
     const newConditions = currentConditions.includes(conditionValue)
       ? currentConditions.filter(c => c !== conditionValue)
       : [...currentConditions, conditionValue];
-    setCondition(prev => ({ ...prev, cleanlinessConditions: newConditions }));
+    updateData({ cleanlinessConditions: newConditions });
   };
 
   const addDefect = () => {
@@ -47,23 +30,20 @@ const ZustandDesMietobjekts: React.FC = () => {
       customRoom: '',
       notes: ''
     };
-    setCondition(prev => ({ ...prev, defects: [...prev.defects, newDefect] }));
+    updateData({ defects: [...condition.defects, newDefect] });
   };
 
   const removeDefect = (id: number) => {
-    setCondition(prev => ({
-      ...prev,
-      defects: prev.defects.filter(defect => defect.id !== id)
-    }));
+    updateData({ 
+      defects: condition.defects.filter(defect => defect.id !== id) 
+    });
   };
 
   const updateDefect = (id: number, field: keyof Defect, value: string) => {
-    setCondition(prev => ({
-      ...prev,
-      defects: prev.defects.map(defect => 
-        defect.id === id ? { ...defect, [field]: value } : defect
-      )
-    }));
+    const updatedDefects = condition.defects.map(defect => 
+      defect.id === id ? { ...defect, [field]: value } : defect
+    );
+    updateData({ defects: updatedDefects });
   };
 
   return (

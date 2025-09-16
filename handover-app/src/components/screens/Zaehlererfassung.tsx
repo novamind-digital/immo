@@ -1,23 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Select from '../Select';
 import InputField from '../InputField';
 import DatePicker from '../DatePicker';
-
-// Local interface definition
-interface Meter {
-  id: number;
-  readingDate: string;
-  meterType: string;
-  customMeterType: string;
-  meterLocation: string;
-  customMeterLocation: string;
-  meterNumber: string;
-  meterReading: string;
-}
-
+import { useHandoverArrayStep } from '../../hooks/useHandoverStep';
+import type { Meter } from '../../types/handover';
 
 const Zaehlererfassung: React.FC = () => {
-  const [meters, setMeters] = useState<Meter[]>([]);
+  const { data: meters, addItem, removeItem, updateItem } = useHandoverArrayStep('meters');
 
   const addMeter = () => {
     const newMeter: Meter = {
@@ -30,21 +19,21 @@ const Zaehlererfassung: React.FC = () => {
       meterNumber: '',
       meterReading: ''
     };
-    setMeters([...meters, newMeter]);
+    addItem(newMeter);
   };
 
   const removeMeter = (id: number) => {
-    setMeters(meters.filter(meter => meter.id !== id));
+    const index = meters.findIndex(meter => meter.id === id);
+    if (index !== -1) {
+      removeItem(index);
+    }
   };
 
   const updateMeter = (id: number, field: string, value: string) => {
-    const updatedMeters = meters.map(meter => {
-      if (meter.id === id) {
-        return { ...meter, [field]: value };
-      }
-      return meter;
-    });
-    setMeters(updatedMeters);
+    const index = meters.findIndex(meter => meter.id === id);
+    if (index !== -1) {
+      updateItem(index, { [field]: value });
+    }
   };
 
 

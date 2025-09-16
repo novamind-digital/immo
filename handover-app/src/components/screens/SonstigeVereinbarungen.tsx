@@ -1,15 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import InputField from '../InputField';
-
-interface Agreement {
-  id: number;
-  subject: string;
-  description: string;
-}
-
+import { useHandoverArrayStep } from '../../hooks/useHandoverStep';
+import type { Agreement } from '../../types/handover';
 
 const SonstigeVereinbarungen: React.FC = () => {
-  const [agreements, setAgreements] = useState<Agreement[]>([]);
+  const { data: agreements, addItem, removeItem, updateItem } = useHandoverArrayStep('agreements');
 
   const addAgreement = () => {
     const newAgreement: Agreement = {
@@ -17,18 +12,21 @@ const SonstigeVereinbarungen: React.FC = () => {
       subject: '',
       description: ''
     };
-    setAgreements([...agreements, newAgreement]);
+    addItem(newAgreement);
   };
 
   const removeAgreement = (id: number) => {
-    setAgreements(agreements.filter(agreement => agreement.id !== id));
+    const index = agreements.findIndex(agreement => agreement.id === id);
+    if (index !== -1) {
+      removeItem(index);
+    }
   };
 
   const updateAgreement = (id: number, field: string, value: string) => {
-    const updatedAgreements = agreements.map(agreement => 
-      agreement.id === id ? { ...agreement, [field]: value } : agreement
-    );
-    setAgreements(updatedAgreements);
+    const index = agreements.findIndex(agreement => agreement.id === id);
+    if (index !== -1) {
+      updateItem(index, { [field]: value });
+    }
   };
 
 

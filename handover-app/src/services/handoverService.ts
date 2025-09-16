@@ -27,19 +27,35 @@ export class HandoverService {
   private readonly MANAGERS_COLLECTION = 'managers';
   private readonly AGREEMENTS_COLLECTION = 'agreement-templates';
 
-  // Handover CRUD operations
-  async createHandover(data: Omit<HandoverData, 'meta'>): Promise<string> {
-    const handoverData = {
-      ...data,
-      meta: {
+  /**
+   * Creates an ordered handover data structure that matches the app flow
+   * This ensures Firebase fields are stored in logical order: general -> property -> condition -> meters -> keys -> photos -> agreements -> signatures
+   */
+  private createOrderedHandoverData(data: Omit<HandoverData, 'meta'> | HandoverData): any {
+    return {
+      meta: data.meta || {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         status: 'draft',
         version: 1
-      }
+      },
+      general: data.general,
+      property: data.property,
+      condition: data.condition,
+      meters: data.meters,
+      keys: data.keys,
+      photos: data.photos,
+      agreements: data.agreements,
+      signatures: data.signatures
     };
+  }
 
-    const docRef = await addDoc(collection(db, this.COLLECTION_NAME), handoverData);
+  // Handover CRUD operations
+  async createHandover(data: Omit<HandoverData, 'meta'>): Promise<string> {
+    // Use ordered data structure to ensure fields appear in logical app flow order
+    const orderedData = this.createOrderedHandoverData(data);
+    
+    const docRef = await addDoc(collection(db, this.COLLECTION_NAME), orderedData);
     return docRef.id;
   }
 
@@ -66,16 +82,30 @@ export class HandoverService {
   async updateHandover(id: string, updates: PartialHandoverData): Promise<void> {
     const docRef = doc(db, this.COLLECTION_NAME, id);
     
-    const updateData = {
+    // First get the current data to merge with updates
+    const currentDoc = await getDoc(docRef);
+    if (!currentDoc.exists()) {
+      throw new Error(`Handover with id ${id} not found`);
+    }
+    
+    const currentData = currentDoc.data() as HandoverData;
+    
+    // Merge current data with updates
+    const mergedData = {
+      ...currentData,
       ...updates,
       meta: {
+        ...currentData.meta,
         ...updates.meta,
         updatedAt: serverTimestamp(),
-        version: (updates.meta?.version || 1) + 1
+        version: (updates.meta?.version || currentData.meta?.version || 1) + 1
       }
     };
 
-    await updateDoc(docRef, updateData);
+    // Use ordered structure to maintain field order
+    const orderedUpdateData = this.createOrderedHandoverData(mergedData);
+
+    await updateDoc(docRef, orderedUpdateData);
   }
 
   async deleteHandover(id: string): Promise<void> {

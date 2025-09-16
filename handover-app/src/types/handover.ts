@@ -85,6 +85,25 @@ export interface Signature {
   signedAt?: Date;
 }
 
+export interface BuiltInKitchen {
+  hasBuiltInKitchen: 'ja' | 'nein';
+  condition?: 'neu' | 'neuwertig' | 'gebraucht' | 'stark_abgenutzt';
+  photos?: string[];
+}
+
+export interface Cellar {
+  id: number;
+  name: string;
+  photos?: string[];
+}
+
+export interface Inventory {
+  id: number;
+  name: string;
+  condition: 'neu' | 'neuwertig' | 'gebraucht' | 'stark_abgenutzt';
+  photos?: string[];
+}
+
 // Main handover document structure
 export interface HandoverData {
   meta: {
@@ -110,6 +129,9 @@ export interface HandoverData {
       stellplatz?: string;
       gewerbeeinheit?: string;
     };
+    builtInKitchen?: BuiltInKitchen;
+    cellars?: Cellar[];
+    inventories?: Inventory[];
   };
   condition: {
     overallCondition: string;

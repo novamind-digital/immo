@@ -80,7 +80,12 @@ const createDefaultHandoverData = (): HandoverData => ({
   property: {
     selectedAddress: '',
     propertyType: '',
-    selectedFloors: []
+    selectedFloors: [],
+    builtInKitchen: {
+      hasBuiltInKitchen: 'nein'
+    },
+    cellars: [],
+    inventories: []
   },
   condition: {
     overallCondition: 'erstbezug',
