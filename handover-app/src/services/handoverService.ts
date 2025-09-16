@@ -32,8 +32,9 @@ export class HandoverService {
    * This ensures Firebase fields are stored in logical order: general -> property -> condition -> meters -> keys -> photos -> agreements -> signatures
    */
   private createOrderedHandoverData(data: Omit<HandoverData, 'meta'> | HandoverData): any {
+    const hasMetaField = 'meta' in data;
     return {
-      meta: data.meta || {
+      meta: hasMetaField ? data.meta : {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         status: 'draft',

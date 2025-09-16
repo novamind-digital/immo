@@ -107,7 +107,7 @@ const BilderZumMietobjekt: React.FC = () => {
           {photo.room === 'custom' && (
             <InputField
               label="Eigener Raum"
-              value={photo.customRoom}
+              value={photo.customRoom || ''}
               onChange={(value) => updatePhoto(photo.id, 'customRoom', value)}
               required
             />

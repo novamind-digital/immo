@@ -136,7 +136,7 @@ const ZustandDesMietobjekts: React.FC = () => {
           {defect.room === 'custom' && (
             <InputField
               label="Eigener Raum"
-              value={defect.customRoom}
+              value={defect.customRoom || ''}
               onChange={(value) => updateDefect(defect.id, 'customRoom', value)}
               required
             />

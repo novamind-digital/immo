@@ -1,8 +1,8 @@
 import React from 'react';
-import { useHandoverStep } from '../../hooks/useHandoverStep';
 
 const Unterzeichnung: React.FC = () => {
-  const { data: signatures, updateData } = useHandoverStep('signatures');
+  // Note: useHandoverStep will be used when implementing signature functionality
+  // const { data: signatures, updateData } = useHandoverStep('signatures');
 
 
   return (

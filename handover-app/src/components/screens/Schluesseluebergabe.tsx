@@ -102,7 +102,7 @@ const Schluesseluebergabe: React.FC = () => {
           {key.type === 'custom' && (
             <InputField
               label="Eigene Schlüsselart"
-              value={key.customType}
+              value={key.customType || ''}
               onChange={(value) => updateKey(key.id, 'customType', value)}
               required
             />

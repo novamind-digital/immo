@@ -54,23 +54,52 @@ const SimpleForm: React.FC = () => {
     });
   };
 
-  const updateTenant = (id: number, field: keyof Tenant, value: any) => {
+  const updateTenant = (id: number, field: string, value: any) => {
     updateData({ 
-      tenants: generalData.tenants.map(tenant => 
-        tenant.id === id ? { ...tenant, [field]: value } : tenant
-      )
+      tenants: generalData.tenants.map(tenant => {
+        if (tenant.id !== id) return tenant;
+        
+        // Handle nested properties like 'address.street' or 'bankDetails.iban'
+        if (field.includes('.')) {
+          const [parentKey, childKey] = field.split('.');
+          return {
+            ...tenant,
+            [parentKey]: {
+              ...((tenant as any)[parentKey] || {}),
+              [childKey]: value
+            }
+          };
+        }
+        
+        return { ...tenant, [field]: value };
+      })
     });
   };
 
   const updateOwnerCustomData = (field: string, value: any) => {
     const customData = generalData.manager.customData || { type: 'person', address: { street: '', postalCode: '', city: '' } };
+    
+    let updatedCustomData;
+    if (field.includes('.')) {
+      const [parentKey, childKey] = field.split('.');
+      updatedCustomData = {
+        ...customData,
+        [parentKey]: {
+          ...((customData as any)[parentKey] || {}),
+          [childKey]: value
+        }
+      };
+    } else {
+      updatedCustomData = {
+        ...customData,
+        [field]: value
+      };
+    }
+    
     updateData({
       manager: {
         ...generalData.manager,
-        customData: {
-          ...customData,
-          [field]: value
-        }
+        customData: updatedCustomData
       }
     });
   };
@@ -286,20 +315,20 @@ const SimpleForm: React.FC = () => {
                   { value: 'frau', label: 'Frau' },
                   { value: 'divers', label: 'Divers' }
                 ]}
-                value={tenant.title}
+                value={tenant.title || 'herr'}
                 onChange={(value) => updateTenant(tenant.id, 'title', value)}
               />
 
               <div className="grid grid-cols-2 gap-4">
                 <InputField
                   label="Vorname"
-                  value={tenant.firstName}
+                  value={tenant.firstName || ''}
                   onChange={(value) => updateTenant(tenant.id, 'firstName', value)}
                   required
                 />
                 <InputField
                   label="Nachname"
-                  value={tenant.lastName}
+                  value={tenant.lastName || ''}
                   onChange={(value) => updateTenant(tenant.id, 'lastName', value)}
                   required
                 />
@@ -313,7 +342,7 @@ const SimpleForm: React.FC = () => {
                     
                     <InputField
                       label="Straße und Hausnummer"
-                      value={tenant.address?.street || ''}
+                      value={(tenant.address?.street) || ''}
                       onChange={(value) => updateTenant(tenant.id, 'address.street', value)}
                       required
                     />
@@ -321,13 +350,13 @@ const SimpleForm: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <InputField
                         label="PLZ"
-                        value={tenant.address?.postalCode || ''}
+                        value={(tenant.address?.postalCode) || ''}
                         onChange={(value) => updateTenant(tenant.id, 'address.postalCode', value)}
                         required
                       />
                       <InputField
                         label="Ort"
-                        value={tenant.address?.city || ''}
+                        value={(tenant.address?.city) || ''}
                         onChange={(value) => updateTenant(tenant.id, 'address.city', value)}
                         required
                       />
@@ -343,20 +372,20 @@ const SimpleForm: React.FC = () => {
             <>
               <InputField
                 label="Firmenname"
-                value={tenant.companyName}
+                value={tenant.companyName || ''}
                 onChange={(value) => updateTenant(tenant.id, 'companyName', value)}
                 required
               />
               <InputField
                 label="Ansprechpartner"
-                value={tenant.contactPerson}
+                value={tenant.contactPerson || ''}
                 onChange={(value) => updateTenant(tenant.id, 'contactPerson', value)}
                 required
               />
               
               <InputField
                 label="Straße und Hausnummer"
-                value={tenant.address?.street || ''}
+                value={(tenant.address?.street) || ''}
                 onChange={(value) => updateTenant(tenant.id, 'address.street', value)}
                 required
               />
@@ -364,13 +393,13 @@ const SimpleForm: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <InputField
                   label="PLZ"
-                  value={tenant.address?.postalCode || ''}
+                  value={(tenant.address?.postalCode) || ''}
                   onChange={(value) => updateTenant(tenant.id, 'address.postalCode', value)}
                   required
                 />
                 <InputField
                   label="Ort"
-                  value={tenant.address?.city || ''}
+                  value={(tenant.address?.city) || ''}
                   onChange={(value) => updateTenant(tenant.id, 'address.city', value)}
                   required
                 />

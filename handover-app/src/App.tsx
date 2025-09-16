@@ -13,7 +13,7 @@ import Protokollversand from './components/screens/Protokollversand';
 import { HANDOVER_STEPS } from './constants/steps';
 
 function App() {
-  const { state, saveHandover } = useHandover();
+  const { saveHandover } = useHandover();
   const [currentStep, setCurrentStep] = useState(() => {
     // Load saved step from localStorage on initial load
     const saved = localStorage.getItem('handover_currentStep');

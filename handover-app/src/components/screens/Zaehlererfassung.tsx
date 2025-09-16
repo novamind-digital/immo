@@ -116,7 +116,7 @@ const Zaehlererfassung: React.FC = () => {
           {meter.meterType === 'custom' && (
             <InputField
               label="Eigene Zählerart"
-              value={meter.customMeterType}
+              value={meter.customMeterType || ''}
               onChange={(value) => updateMeter(meter.id, 'customMeterType', value)}
               required
             />
@@ -139,7 +139,7 @@ const Zaehlererfassung: React.FC = () => {
           {meter.meterLocation === 'custom' && (
             <InputField
               label="Eigene Lage"
-              value={meter.customMeterLocation}
+              value={meter.customMeterLocation || ''}
               onChange={(value) => updateMeter(meter.id, 'customMeterLocation', value)}
               required
             />

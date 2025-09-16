@@ -291,7 +291,7 @@ const AngabenZumMietobjekt: React.FC = () => {
               { value: 'ja', label: 'Ja' }
             ]}
             value={property.builtInKitchen?.hasBuiltInKitchen || 'nein'}
-            onChange={updateBuiltInKitchen}
+            onChange={(value) => updateBuiltInKitchen(value as 'ja' | 'nein')}
           />
           
           {/* Zusätzliche Felder wenn Einbauküche vorhanden */}
@@ -307,7 +307,7 @@ const AngabenZumMietobjekt: React.FC = () => {
                   { value: 'stark_abgenutzt', label: 'Stark abgenutzt' }
                 ]}
                 value={property.builtInKitchen?.condition || 'neu'}
-                onChange={updateKitchenCondition}
+                onChange={(value) => updateKitchenCondition(value as 'neu' | 'neuwertig' | 'gebraucht' | 'stark_abgenutzt')}
               />
               
               <button
