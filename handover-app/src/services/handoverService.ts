@@ -10,8 +10,7 @@ import {
   where, 
   orderBy, 
   limit,
-  serverTimestamp,
-  Timestamp
+  serverTimestamp
 } from 'firebase/firestore';
 import { 
   ref, 
@@ -20,7 +19,7 @@ import {
   deleteObject 
 } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
-import { HandoverData, PartialHandoverData, PropertyTemplate, ManagerTemplate, AgreementTemplate } from '../types/handover';
+import type { HandoverData, PartialHandoverData, PropertyTemplate, ManagerTemplate, AgreementTemplate } from '../types/handover';
 
 export class HandoverService {
   private readonly COLLECTION_NAME = 'handovers';
@@ -153,20 +152,18 @@ export class HandoverService {
 
   // Utility methods
   async markAsCompleted(id: string): Promise<void> {
-    await this.updateHandover(id, {
-      meta: {
-        status: 'completed',
-        updatedAt: new Date()
-      }
+    const docRef = doc(db, this.COLLECTION_NAME, id);
+    await updateDoc(docRef, {
+      'meta.status': 'completed',
+      'meta.updatedAt': new Date()
     });
   }
 
   async archiveHandover(id: string): Promise<void> {
-    await this.updateHandover(id, {
-      meta: {
-        status: 'archived',
-        updatedAt: new Date()
-      }
+    const docRef = doc(db, this.COLLECTION_NAME, id);
+    await updateDoc(docRef, {
+      'meta.status': 'archived',
+      'meta.updatedAt': new Date()
     });
   }
 

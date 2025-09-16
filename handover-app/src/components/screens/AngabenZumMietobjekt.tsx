@@ -20,50 +20,7 @@ const AngabenZumMietobjekt: React.FC = () => {
     selectedFloors: []
   });
 
-  const [errors, setErrors] = useState<string[]>([]);
-  const [showErrors, setShowErrors] = useState(false);
 
-  const validateForm = (): boolean => {
-    const newErrors: string[] = [];
-
-    // Validate address selection
-    if (!property.selectedAddress) {
-      newErrors.push('Bitte wählen Sie eine Anschrift aus');
-    }
-
-    // Validate custom address if selected
-    if (property.selectedAddress === 'custom') {
-      if (!property.customAddress?.street) {
-        newErrors.push('Straße ist erforderlich');
-      }
-      if (!property.customAddress?.postalCode) {
-        newErrors.push('PLZ ist erforderlich');
-      }
-      if (!property.customAddress?.city) {
-        newErrors.push('Ort ist erforderlich');
-      }
-    }
-
-    // Validate property type
-    if (!property.propertyType) {
-      newErrors.push('Bitte wählen Sie die Art des Mietobjekts aus');
-    }
-
-    // Validate custom property type if selected
-    if (property.propertyType === 'custom' && !property.customPropertyType) {
-      newErrors.push('Bitte geben Sie die Art des Mietobjekts an');
-    }
-
-    // Validate floors selection
-    if (property.selectedFloors.length === 0) {
-      newErrors.push('Bitte wählen Sie mindestens eine Etage aus');
-    }
-
-    setErrors(newErrors);
-    const isValid = newErrors.length === 0;
-    
-    return isValid;
-  };
   
   const [showDesignations, setShowDesignations] = useState(
     !!(property.designations?.wohneinheit || property.designations?.stellplatz || property.designations?.gewerbeeinheit)
@@ -88,7 +45,9 @@ const AngabenZumMietobjekt: React.FC = () => {
     setProperty(prev => ({
       ...prev,
       customAddress: {
-        ...prev.customAddress,
+        street: prev.customAddress?.street || '',
+        postalCode: prev.customAddress?.postalCode || '',
+        city: prev.customAddress?.city || '',
         [field]: value
       }
     }));
@@ -462,26 +421,6 @@ const AngabenZumMietobjekt: React.FC = () => {
         </button>
       </div>
 
-      {/* Error display */}
-      {showErrors && errors.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <div className="flex items-start">
-            <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
-            <div>
-              <h3 className="text-sm font-medium text-red-800 mb-2">
-                Bitte korrigieren Sie folgende Fehler:
-              </h3>
-              <ul className="text-sm text-red-700 space-y-1">
-                {errors.map((error, index) => (
-                  <li key={index}>• {error}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

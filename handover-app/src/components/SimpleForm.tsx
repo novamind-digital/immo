@@ -87,6 +87,15 @@ const SimpleForm: React.FC = () => {
     }));
   };
 
+  // Wrapper functions for Toggle component compatibility
+  const handleRentalTypeChange = (value: string) => {
+    updateRentalType(value as 'start' | 'end');
+  };
+
+  const handleManagerTypeChange = (value: string) => {
+    updateManagerType(value as 'verwalter' | 'eigentuemer');
+  };
+
   const updateSelectedOwner = (selectedId: string) => {
     setFormData(prev => ({
       ...prev,
@@ -207,7 +216,7 @@ const SimpleForm: React.FC = () => {
             { value: 'end', label: 'Mietende' }
           ]}
           value={formData.rentalType}
-          onChange={updateRentalType}
+          onChange={handleRentalTypeChange}
         />
 
         <DatePicker
@@ -229,7 +238,7 @@ const SimpleForm: React.FC = () => {
             { value: 'eigentuemer', label: 'Eigentümer' }
           ]}
           value={formData.manager.type}
-          onChange={updateManagerType}
+          onChange={handleManagerTypeChange}
         />
 
         <Select

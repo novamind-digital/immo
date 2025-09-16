@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
-import { HandoverData, PartialHandoverData, Tenant, Defect, Meter, Key, Photo, Agreement } from '../types/handover';
+import React, { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react';
+import type { HandoverData, Meter, Key, Photo, Agreement } from '../types/handover';
 import { handoverService } from '../services/handoverService';
 
 // Action types

@@ -92,7 +92,6 @@ const ZustandDesMietobjekts: React.FC = () => {
           ]}
           value={condition.overallCondition}
           onChange={updateOverallCondition}
-          required
         />
         
         {/* Sauberkeitszustand */}
