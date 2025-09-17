@@ -8,7 +8,7 @@ interface MainNavigationProps {
 
 const MainNavigation: React.FC<MainNavigationProps> = ({ currentModule, onModuleChange }) => {
   
-  const getIcon = (iconName: string, colors: any) => {
+  const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'home':
         return (
@@ -65,7 +65,7 @@ const MainNavigation: React.FC<MainNavigationProps> = ({ currentModule, onModule
                   <div className={`p-3 rounded-lg mr-4 ${
                     isActive ? 'bg-white bg-opacity-20' : colors.bgLight
                   }`}>
-                    {getIcon(item.icon, colors)}
+                    {getIcon(item.icon)}
                   </div>
                 </div>
                 <h3 className={`text-lg font-semibold mb-2 ${

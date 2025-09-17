@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React from 'react';
 import { NAVIGATION_ITEMS, type AppModule } from '../types/navigation';
 
 interface HeaderProps {
@@ -13,7 +12,6 @@ const Header: React.FC<HeaderProps> = ({
   currentModule,
   onToggleSidebar
 }) => {
-  const { state } = useAuth();
 
   const getModuleTitle = () => {
     if (title) return title;

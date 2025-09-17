@@ -85,9 +85,6 @@ function App() {
     }
   };
 
-  const handleShowModules = () => {
-    setCurrentView('modules');
-  };
 
   const handleModuleChange = (module: AppModule) => {
     setCurrentModule(module);

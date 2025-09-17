@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { handoverService } from '../../services/handoverService';
-import { Button, Card, StatCard } from '../shared';
+import { Button, StatCard } from '../shared';
 import Calendar from '../calendar/Calendar';
 import UpcomingEvents from '../calendar/UpcomingEvents';
 import ReminderNotification from '../ReminderNotification';
@@ -202,14 +202,14 @@ const HandoverModule: React.FC<HandoverModuleProps> = ({ onCreateNew, onOpenHand
             {/* Upcoming Events */}
             <UpcomingEvents 
               handovers={handovers}
-              onEventClick={onOpenHandover}
+              onEventClick={(handover) => onOpenHandover(handover.id)}
               maxEvents={3}
             />
             
             {/* Calendar */}
             <Calendar 
               handovers={handovers}
-              onEventClick={onOpenHandover}
+              onEventClick={(handover) => onOpenHandover(handover.id)}
             />
           </div>
         ) : (
