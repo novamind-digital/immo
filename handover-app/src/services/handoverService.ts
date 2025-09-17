@@ -26,6 +26,17 @@ export class HandoverService {
   private readonly PROPERTIES_COLLECTION = 'properties';
   private readonly MANAGERS_COLLECTION = 'managers';
   private readonly AGREEMENTS_COLLECTION = 'agreement-templates';
+  
+  // Set current user ID for filtering data
+  private currentUserId: string | null = null;
+  
+  setCurrentUser(userId: string | null) {
+    this.currentUserId = userId;
+  }
+  
+  getCurrentUserId(): string | null {
+    return this.currentUserId;
+  }
 
   /**
    * Creates an ordered handover data structure that matches the app flow
@@ -38,7 +49,8 @@ export class HandoverService {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         status: 'draft',
-        version: 1
+        version: 1,
+        userId: this.currentUserId
       },
       general: data.general,
       property: data.property,
@@ -53,6 +65,10 @@ export class HandoverService {
 
   // Handover CRUD operations
   async createHandover(data: Omit<HandoverData, 'meta'>): Promise<string> {
+    if (!this.currentUserId) {
+      throw new Error('Benutzer muss angemeldet sein, um eine Übergabe zu erstellen');
+    }
+    
     // Use ordered data structure to ensure fields appear in logical app flow order
     const orderedData = this.createOrderedHandoverData(data);
     
@@ -66,6 +82,12 @@ export class HandoverService {
     
     if (docSnap.exists()) {
       const data = docSnap.data();
+      
+      // Check if the current user owns this handover
+      if (this.currentUserId && data.meta?.userId && data.meta.userId !== this.currentUserId) {
+        throw new Error('Zugriff verweigert: Sie haben keine Berechtigung für diese Übergabe');
+      }
+      
       // Convert Firestore timestamps to Date objects
       return {
         ...data,
@@ -114,15 +136,16 @@ export class HandoverService {
     await deleteDoc(docRef);
   }
 
-  async getAllHandovers(userId?: string): Promise<(HandoverData & { id: string })[]> {
-    let q = query(
+  async getAllHandovers(): Promise<(HandoverData & { id: string })[]> {
+    if (!this.currentUserId) {
+      throw new Error('Benutzer muss angemeldet sein, um Übergaben anzuzeigen');
+    }
+    
+    const q = query(
       collection(db, this.COLLECTION_NAME),
+      where('meta.userId', '==', this.currentUserId),
       orderBy('meta.createdAt', 'desc')
     );
-
-    if (userId) {
-      q = query(q, where('meta.userId', '==', userId));
-    }
 
     const querySnapshot = await getDocs(q);
     
@@ -200,8 +223,13 @@ export class HandoverService {
 
   // Search and filter methods
   async searchHandoversByProperty(propertyAddress: string): Promise<(HandoverData & { id: string })[]> {
+    if (!this.currentUserId) {
+      throw new Error('Benutzer muss angemeldet sein, um Übergaben zu suchen');
+    }
+    
     const q = query(
       collection(db, this.COLLECTION_NAME),
+      where('meta.userId', '==', this.currentUserId),
       where('property.selectedAddress', '==', propertyAddress),
       orderBy('meta.createdAt', 'desc')
     );
@@ -220,8 +248,13 @@ export class HandoverService {
   }
 
   async getRecentHandovers(limitCount: number = 10): Promise<(HandoverData & { id: string })[]> {
+    if (!this.currentUserId) {
+      throw new Error('Benutzer muss angemeldet sein, um Übergaben anzuzeigen');
+    }
+    
     const q = query(
       collection(db, this.COLLECTION_NAME),
+      where('meta.userId', '==', this.currentUserId),
       orderBy('meta.createdAt', 'desc'),
       limit(limitCount)
     );

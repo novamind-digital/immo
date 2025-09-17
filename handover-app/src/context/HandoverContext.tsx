@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react';
-import type { HandoverData, Meter, Key, Photo, Agreement } from '../types/handover';
+import type { HandoverData, HandoverScheduling, Meter, Key, Photo, Agreement } from '../types/handover';
 import { handoverService } from '../services/handoverService';
 
 // Action types
@@ -8,6 +8,7 @@ type HandoverAction =
   | { type: 'UPDATE_GENERAL'; payload: Partial<HandoverData['general']> }
   | { type: 'UPDATE_PROPERTY'; payload: Partial<HandoverData['property']> }
   | { type: 'UPDATE_CONDITION'; payload: Partial<HandoverData['condition']> }
+  | { type: 'UPDATE_SCHEDULING'; payload: Partial<HandoverScheduling> }
   | { type: 'SET_METERS'; payload: Meter[] }
   | { type: 'SET_KEYS'; payload: Key[] }
   | { type: 'SET_PHOTOS'; payload: Photo[] }
@@ -32,6 +33,7 @@ interface HandoverContextType {
   updateGeneral: (data: Partial<HandoverData['general']>) => void;
   updateProperty: (data: Partial<HandoverData['property']>) => void;
   updateCondition: (data: Partial<HandoverData['condition']>) => void;
+  updateScheduling: (data: Partial<HandoverScheduling>) => void;
   updateSignatures: (data: Partial<HandoverData['signatures']>) => void;
   
   // Array item actions
@@ -151,6 +153,16 @@ const handoverReducer = (state: HandoverState, action: HandoverAction): Handover
         isDirty: true
       };
       
+    case 'UPDATE_SCHEDULING':
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          scheduling: { ...state.data.scheduling, ...action.payload }
+        },
+        isDirty: true
+      };
+      
     case 'SET_METERS':
       return {
         ...state,
@@ -223,6 +235,10 @@ export const HandoverProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const updateCondition = useCallback((data: Partial<HandoverData['condition']>) => {
     dispatch({ type: 'UPDATE_CONDITION', payload: data });
+  }, []);
+
+  const updateScheduling = useCallback((data: Partial<HandoverScheduling>) => {
+    dispatch({ type: 'UPDATE_SCHEDULING', payload: data });
   }, []);
 
   const updateSignatures = useCallback((data: Partial<HandoverData['signatures']>) => {
@@ -312,6 +328,7 @@ export const HandoverProvider: React.FC<{ children: ReactNode }> = ({ children }
     updateGeneral,
     updateProperty,
     updateCondition,
+    updateScheduling,
     updateSignatures,
     setMeters,
     setKeys,

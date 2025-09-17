@@ -1,6 +1,8 @@
 import React from 'react';
 import InputField from './InputField';
 import DatePicker from './DatePicker';
+import TimePicker from './TimePicker';
+import NumberInput from './NumberInput';
 import Toggle from './Toggle';
 import Select from './Select';
 import { useHandoverStep } from '../hooks/useHandoverStep';
@@ -8,6 +10,7 @@ import type { Tenant } from '../types/handover';
 
 const SimpleForm: React.FC = () => {
   const { data: generalData, updateData } = useHandoverStep('general');
+  const { data: schedulingData, updateData: updateScheduling } = useHandoverStep('scheduling');
 
   // Helper functions to update specific parts of general data
   const updateRentalType = (rentalType: 'start' | 'end') => {
@@ -113,6 +116,59 @@ const SimpleForm: React.FC = () => {
     updateManagerType(value as 'verwalter' | 'eigentuemer');
   };
 
+  // Helper functions for scheduling
+  const updateSchedulingDate = (scheduledDate: string) => {
+    // Convert DD.MM.YY to Date object
+    if (scheduledDate) {
+      const [day, month, year] = scheduledDate.split('.');
+      if (day && month && year) {
+        const fullYear = parseInt('20' + year); // Convert YY to YYYY
+        const date = new Date(fullYear, parseInt(month) - 1, parseInt(day));
+        updateScheduling({ scheduledDate: date });
+      }
+    } else {
+      updateScheduling({ scheduledDate: undefined });
+    }
+  };
+
+  const updateSchedulingTime = (scheduledTime: string) => {
+    updateScheduling({ scheduledTime });
+  };
+
+  const updateEstimatedDuration = (duration: number | '') => {
+    updateScheduling({ estimatedDuration: duration === '' ? undefined : duration });
+  };
+
+  const updateLocation = (location: string) => {
+    updateScheduling({ location });
+  };
+
+  const updateReminderSet = (value: string) => {
+    const reminderSet = value === 'ja';
+    updateScheduling({ reminderSet });
+    
+    // If setting reminder to true and we have a scheduled date, set default reminder date
+    if (reminderSet && schedulingData.scheduledDate) {
+      const reminderDate = new Date(schedulingData.scheduledDate);
+      reminderDate.setHours(reminderDate.getHours() - 24); // 24 hours before
+      updateScheduling({ reminderDate });
+    } else if (!reminderSet) {
+      updateScheduling({ reminderDate: undefined });
+    }
+  };
+
+  // Format date for display (Date to DD.MM.YY)
+  const formatScheduledDate = () => {
+    if (schedulingData.scheduledDate) {
+      const date = new Date(schedulingData.scheduledDate);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear().toString().slice(2);
+      return `${day}.${month}.${year}`;
+    }
+    return '';
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <h2 className="text-lg font-medium text-blue-500 mb-4 flex items-center">
@@ -146,7 +202,68 @@ const SimpleForm: React.FC = () => {
         />
       </div>
 
-      {/* Card 2: Angaben zum Eigentümer */}
+      {/* Card 2: Terminplanung */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <h3 className="text-md font-medium text-gray-500 mb-4">Terminplanung</h3>
+        
+        <DatePicker
+          label="Terminatum"
+          value={formatScheduledDate()}
+          onChange={updateSchedulingDate}
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <TimePicker
+            label="Uhrzeit"
+            value={schedulingData.scheduledTime || ''}
+            onChange={updateSchedulingTime}
+          />
+          
+          <NumberInput
+            label="Geschätzte Dauer"
+            value={schedulingData.estimatedDuration || ''}
+            onChange={updateEstimatedDuration}
+            min={15}
+            max={480}
+            step={15}
+            suffix="Min"
+          />
+        </div>
+
+        <InputField
+          label="Ort / Treffpunkt"
+          value={schedulingData.location || ''}
+          onChange={updateLocation}
+          placeholder="z.B. Haupteingang, Hausmeisterwohnung..."
+        />
+
+        <Toggle
+          label="Erinnerung einrichten?"
+          name="reminderSet"
+          options={[
+            { value: 'nein', label: 'Nein' },
+            { value: 'ja', label: 'Ja' }
+          ]}
+          value={schedulingData.reminderSet ? 'ja' : 'nein'}
+          onChange={updateReminderSet}
+        />
+
+        {schedulingData.reminderSet && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <div className="flex items-center mb-2">
+              <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+              </svg>
+              <span className="text-sm font-medium text-blue-900">Erinnerung aktiv</span>
+            </div>
+            <p className="text-sm text-blue-700">
+              Sie erhalten 24 Stunden vor dem Termin eine Erinnerung.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Card 3: Angaben zum Eigentümer */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <h3 className="text-md font-medium text-gray-500 mb-4">Angaben zum {generalData.manager.type === 'verwalter' ? 'Verwalter' : 'Eigentümer'}</h3>
         

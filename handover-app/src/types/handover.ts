@@ -105,13 +105,27 @@ export interface Inventory {
 }
 
 // Main handover document structure
+export interface HandoverScheduling {
+  scheduledDate?: Date;
+  scheduledTime?: string; // "14:00"
+  estimatedDuration?: number; // in minutes
+  location?: string;
+  participantNames?: string[];
+  reminderSet?: boolean;
+  reminderDate?: Date;
+  isRecurring?: boolean;
+  notes?: string;
+}
+
 export interface HandoverData {
   meta: {
     createdAt: Date;
     updatedAt: Date;
     status: 'draft' | 'completed' | 'archived';
     version: number;
+    userId?: string; // Firebase user ID
   };
+  scheduling?: HandoverScheduling;
   general: {
     rentalType: 'start' | 'end';
     rentalDate: string;

@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react';
 import { useHandover } from '../context/HandoverContext';
-import type { HandoverData } from '../types/handover';
+import type { HandoverData, HandoverScheduling } from '../types/handover';
 
 // Define step keys for type safety
-export type StepKey = 'general' | 'property' | 'condition' | 'meters' | 'keys' | 'photos' | 'agreements' | 'signatures';
+export type StepKey = 'general' | 'property' | 'condition' | 'scheduling' | 'meters' | 'keys' | 'photos' | 'agreements' | 'signatures';
 
 // Step-specific data types
 export type StepData<T extends StepKey> = T extends 'general' 
@@ -12,6 +12,8 @@ export type StepData<T extends StepKey> = T extends 'general'
   ? HandoverData['property']
   : T extends 'condition'
   ? HandoverData['condition']
+  : T extends 'scheduling'
+  ? HandoverScheduling
   : T extends 'meters'
   ? HandoverData['meters']
   : T extends 'keys'
@@ -49,6 +51,7 @@ export const useHandoverStep = <T extends StepKey>(stepKey: T): UseHandoverStepR
     updateGeneral, 
     updateProperty, 
     updateCondition,
+    updateScheduling,
     updateSignatures,
     setMeters,
     setKeys,
@@ -57,7 +60,7 @@ export const useHandoverStep = <T extends StepKey>(stepKey: T): UseHandoverStepR
   } = useHandover();
 
   // Get the current data for this step
-  const data = state.data[stepKey] as StepData<T>;
+  const data = (stepKey === 'scheduling' ? state.data.scheduling || {} : state.data[stepKey]) as StepData<T>;
 
   // Create update function based on step type
   const updateData = useCallback((updates: Partial<StepData<T>>) => {
@@ -70,6 +73,9 @@ export const useHandoverStep = <T extends StepKey>(stepKey: T): UseHandoverStepR
         break;
       case 'condition':
         updateCondition(updates as Partial<HandoverData['condition']>);
+        break;
+      case 'scheduling':
+        updateScheduling(updates as Partial<HandoverScheduling>);
         break;
       case 'signatures':
         updateSignatures(updates as Partial<HandoverData['signatures']>);
@@ -95,7 +101,7 @@ export const useHandoverStep = <T extends StepKey>(stepKey: T): UseHandoverStepR
         }
         break;
     }
-  }, [stepKey, updateGeneral, updateProperty, updateCondition, updateSignatures, setMeters, setKeys, setPhotos, setAgreements]);
+  }, [stepKey, updateGeneral, updateProperty, updateCondition, updateScheduling, updateSignatures, setMeters, setKeys, setPhotos, setAgreements]);
 
   // Save current step data to localStorage
   const saveToLocalStorage = useCallback(() => {
@@ -186,7 +192,7 @@ export const useHandoverArrayStep = <T extends 'meters' | 'keys' | 'photos' | 'a
 
 // Utility function to clear all localStorage data
 export const clearHandoverLocalStorage = () => {
-  const stepKeys: StepKey[] = ['general', 'property', 'condition', 'meters', 'keys', 'photos', 'agreements', 'signatures'];
+  const stepKeys: StepKey[] = ['general', 'property', 'condition', 'scheduling', 'meters', 'keys', 'photos', 'agreements', 'signatures'];
   stepKeys.forEach(stepKey => {
     localStorage.removeItem(getLocalStorageKey(stepKey));
   });
